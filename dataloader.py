@@ -4,103 +4,78 @@ sklearn and Pytorch
 """
 import pandas as pd
 import os
-from sklearn.model_selection import train_test_split
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.model_selection import StratifiedKFold
 
 
-def get_train_test_set(train_percentage: float = .8, path: str = "./dataset/",
-                       force_build: bool = False, normalized: bool = True) -> tuple:
-    """
-    Return the training and testing dataset.
-
-    The function will first find if there exists train.csv and test.csv files
-    inside path. If no, it will then generate a training and testing dataset and
-    will then save to path. If yes and force_build is False, it will read the train.csv
-    and test.csv and return them. If force_build is enabled, sampling will always
-    take effect and newly sampled training and testing dataset will be saved.
-
-    :param normalized: whether the input file is normalized
-    :param train_percentage: The percentage of records used for training
-    :param path: The path to {train.csv, test.csv} or preprocessed_entire_dataset.csv
-    :param force_build: whether we want resample train/test set
-    :return: (training set, testing set), each of which is a pd.DataFrame
-    """
-    assert 0 < train_percentage < 1, "train percentage is invalid"
-    train_path, test_path = os.path.join(path, "train.csv"), os.path.join(path, "test.csv")
-    if os.path.exists(train_path) and os.path.exists(test_path):
-        print("train.csv and test.csv found.")
-        if not force_build:
-            print("train.csv and test.csv loaded.")
-            train_df, test_df = pd.read_csv(train_path), pd.read_csv(test_path)
-            print(f"Train size: {len(train_df)}, Test size: {len(test_df)}")
-            return train_df, test_df
-        else:
-            print("Resample train, test set...")
-
-    if not force_build:
-        print("Sampling train, test set...")
-
-    print(f"Percentage of train dataset: {train_percentage}")
-
-    if normalized:
-        file_dir = os.path.join(path, "preprocessed_entire_dataset_normalized.csv")
-        print("Input from normalized dataset")
-    else:
-        file_dir = os.path.join(path, "preprocessed_entire_dataset_unnormalized.csv")
-        print("Input from not normalized dataset")
-
-    dataset = load_csv(file_dir=file_dir)
-    train_df, test_df = train_test_split(dataset,
-                                         train_size=int(train_percentage * len(dataset)),
-                                         random_state=2022, shuffle=True)
-    train_df.to_csv(train_path)
-    test_df.to_csv(test_path)
-    print(f"train, test set saved to {path}")
-    print(f"Train size: {len(train_df)}, Test size: {len(test_df)}")
-    return train_df, test_df
-
-
-def load_csv(file_dir: str = "./dataset/preprocessed_entire_dataset_normalized.csv") -> pd.DataFrame:
+def get_data_frame(base_dir: str = "./dataset/", data_method: str = 'minmax'):
     """
     Load the processed DataFrame from csv file
 
-    :param file_dir: location of the dataset to be loaded
-    :return: The loaded DF
+    :param base_dir: location of the dataset directory
+    :param data_method: the dataset to be imported, options: [minmax, unnormalized, zscore]
+    :return: (the loaded DF, one-hot-encoding arrays, mapping {ordinal_label: one-hot vector})
     """
-    return pd.read_csv(file_dir)
+    if data_method not in ["minmax", "unnormalized", "zscore"]:
+        print("Data method should be in [minmax, unnormalized, zscore]")
+        return
+    df_dir = os.path.join(base_dir, f"preprocessed_entire_dataset_{data_method}.csv")
+    if not os.path.exists(df_dir):
+        print(f"Cannot find dataset in {df_dir}")
+        return
+
+    df = pd.read_csv(df_dir)
+
+    one_hot_labels, one_hot_mapping = get_one_hot_labels_and_mapping(df["ordinal_label"])
+
+    return df, one_hot_labels, one_hot_mapping
 
 
-def get_one_hot_labels_and_mapping(train_set: pd.DataFrame, test_set: pd.DataFrame) -> tuple:
+def get_one_hot_labels_and_mapping(labels: pd.DataFrame) -> tuple:
     """
-    Get one-hot encoded labels for training set and test_set,
+    Get one-hot encoded labels for dataset,
     along with mapping {ordinal_label: one-hot vector}
 
-    :param train_set: the training set
-    :param test_set: the test set
-    :return: (one-hot train labels, one-hot test labels, mapping {ordinal_label: one-hot vector})
+    :param labels: the label column of the DF to be encoded
+    :return: (one-hot labels, mapping {ordinal_label: one-hot vector})
     """
-    train_size, test_size = len(train_set), len(test_set)
     encoder = OneHotEncoder(sparse=False)
 
-    train_labels = np.asarray(train_set["ordinal_label"]).reshape(train_size, 1)
-    encoder.fit(train_labels)
-    one_hot_train_labels = encoder.transform(train_labels)
+    labels = np.asarray(labels).reshape(len(labels), 1)
+    one_hot_labels = encoder.fit_transform(labels)
 
     encode_mapping = {}
-    one_hot_labels = np.unique(one_hot_train_labels, axis=0)
+    one_hot_labels = np.unique(one_hot_labels, axis=0)
     origin_labels = encoder.inverse_transform(one_hot_labels).reshape(-1)
     for origin, one_hot in zip(origin_labels, one_hot_labels):
         encode_mapping[origin] = one_hot
+    return one_hot_labels, encode_mapping
 
-    test_labels = np.asarray(test_set["ordinal_label"]).reshape(test_size, 1)
-    one_hot_test_labels = encoder.transform(test_labels)
-    return one_hot_train_labels, one_hot_test_labels, encode_mapping
+
+def get_train_test_indices_for_all_folds(dataframe: pd.DataFrame, k: int = 3,
+                                         seed: int = 2022,
+                                         shuffle: bool = True):
+    """
+    Return the all train and test indices for all folders in cross validation.
+
+    :param dataframe: the dataframe to be split
+    :param k: the number of folders to
+    :param seed: the random seed
+    :param shuffle: whether shuffle each class’s samples before splitting into batches
+    :return:
+    """
+    k_fold = StratifiedKFold(n_splits=k, random_state=seed, shuffle=shuffle)
+    return k_fold.split(X=dataframe, y=dataframe['ordinal_label'])
 
 
 if __name__ == "__main__":
-    # test get train test set
-    train, test = get_train_test_set()
-    # test get one-hot labels and ordinal label -> one-hot mapping
-    one_hot_train, one_hot_test, one_hot_mapping = \
-        get_one_hot_labels_and_mapping(train_set=train, test_set=test)
+    # test functionality of methods listed in this script
+
+    # zscore dataset, compute one-hot encodings and mapping
+    df, one_hot_labels, one_hot_mapping = get_data_frame(data_method='zscore')
+
+    res = get_train_test_indices_for_all_folds(df)
+
+    for train_indices, test_indices in res:
+        print(train_indices.shape, test_indices.shape)
