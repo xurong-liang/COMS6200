@@ -1,15 +1,15 @@
 import sklearn.metrics
 
 
-def evaluate(classifier, hyper, y_true, y_preds, start, end):
+def evaluate(classifier: str, hyper: str, y_true, y_preds, start: int, end: int):
     """
     Output results to a file
 
     
     :param (String): Name of classifier
     :param hyper (String): Name of parameter
-    :param y_preds (array): model predictions
-    :param y_true (array): ground truth labels
+    :param y_preds (np.array/torch tensor): model predictions
+    :param y_true (np.array/torch tensor): ground truth labels
     :param start (int): start of training time
     :param end (int): end of training time 
     """
