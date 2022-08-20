@@ -9,8 +9,8 @@ import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 
 
-def get_train_test_set(train_percentage: float = .7, path: str = "./dataset/",
-                       force_build: bool = False) -> tuple:
+def get_train_test_set(train_percentage: float = .8, path: str = "./dataset/",
+                       force_build: bool = False, normalized: bool = True) -> tuple:
     """
     Return the training and testing dataset.
 
@@ -20,6 +20,7 @@ def get_train_test_set(train_percentage: float = .7, path: str = "./dataset/",
     and test.csv and return them. If force_build is enabled, sampling will always
     take effect and newly sampled training and testing dataset will be saved.
 
+    :param normalized: whether the input file is normalized
     :param train_percentage: The percentage of records used for training
     :param path: The path to {train.csv, test.csv} or preprocessed_entire_dataset.csv
     :param force_build: whether we want resample train/test set
@@ -42,7 +43,14 @@ def get_train_test_set(train_percentage: float = .7, path: str = "./dataset/",
 
     print(f"Percentage of train dataset: {train_percentage}")
 
-    dataset = load_csv()
+    if normalized:
+        file_dir = os.path.join(path, "preprocessed_entire_dataset_normalized.csv")
+        print("Input from normalized dataset")
+    else:
+        file_dir = os.path.join(path, "preprocessed_entire_dataset_unnormalized.csv")
+        print("Input from not normalized dataset")
+
+    dataset = load_csv(file_dir=file_dir)
     train_df, test_df = train_test_split(dataset,
                                          train_size=int(train_percentage * len(dataset)),
                                          random_state=2022, shuffle=True)
@@ -53,7 +61,7 @@ def get_train_test_set(train_percentage: float = .7, path: str = "./dataset/",
     return train_df, test_df
 
 
-def load_csv(file_dir: str = "./dataset/preprocessed_entire_dataset.csv") -> pd.DataFrame:
+def load_csv(file_dir: str = "./dataset/preprocessed_entire_dataset_normalized.csv") -> pd.DataFrame:
     """
     Load the processed DataFrame from csv file
 
