@@ -1,3 +1,7 @@
+"""
+This file has methods related to model evaluation
+"""
+
 import os
 import sklearn.metrics
 
@@ -20,8 +24,7 @@ def evaluate(classifier: str, hyper: str, y_true, y_preds,
     :param res_dir: the directory where the result is saved
     """
     if not os.path.exists(res_dir):
-        print(f"{res_dir} does not exists")
-        return
+        os.mkdir(res_dir)
 
     acc = sklearn.metrics.accuracy_score(y_true, y_preds)
     precision = sklearn.metrics.precision_score(y_true, y_preds)
@@ -39,7 +42,7 @@ def evaluate(classifier: str, hyper: str, y_true, y_preds,
 
     print(text)
 
-    file_path = os.path.join(res_dir, f"{classifier}_{hyper}.txt")
+    file_path = os.path.join(res_dir, f"{classifier}_{hyper}_{data_method}.txt")
     with open(file_path, 'w') as f:
         print(text, file=f)
 
