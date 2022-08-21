@@ -63,7 +63,7 @@ def get_train_test_indices_for_all_folds(dataframe: pd.DataFrame, k: int = 3,
     :param k: the number of folders to
     :param seed: the random seed
     :param shuffle: whether shuffle each class’s samples before splitting into batches
-    :return:
+    :return: the generator of train, test indices of all folders
     """
     k_fold = StratifiedKFold(n_splits=k, random_state=seed, shuffle=shuffle)
     return k_fold.split(X=dataframe, y=dataframe['ordinal_label'])
