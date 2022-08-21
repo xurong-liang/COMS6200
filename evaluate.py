@@ -27,15 +27,15 @@ def evaluate(classifier: str, hyper: str, y_true, y_preds,
     precision = sklearn.metrics.precision_score(y_true, y_preds)
     recall = sklearn.metrics.recall_score(y_true, y_preds)
     f1 = sklearn.metrics.f1_score(y_true, y_preds)
-    train_time = f"{end - start:.6f}s"
+    train_time = f"{end - start:.4f}s"
 
     text = ""
-    for name in ['classifier', 'hyper', 'precision', 'recall', 'f1', "train_time"]:
+    for name in ['classifier', 'hyper', 'acc', 'precision', 'recall', 'f1', "train_time"]:
         metric = locals()[name]
         if type(metric) == str:
             text += f'{name.replace("_", " ").title()}: {metric}\n'
         else:
-            text += f'{name.replace("_", " ").title()}: {metric:.6f}\n'
+            text += f'{name.replace("_", " ").title()}: {metric:.4f}\n'
 
     print(text)
 
