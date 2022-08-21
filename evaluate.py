@@ -45,5 +45,6 @@ def evaluate(classifier: str, hyper: str, y_true, y_preds,
 
 
 if __name__ == "__main__":
+    # For testing only, not meant to be used in the project
     evaluate(classifier='svm', hyper="linear, lr_10", y_true=[1, 0, 0, 1], y_preds=[1, 0, 0, 0],
              start=60, end=90, data_method='zscore')
