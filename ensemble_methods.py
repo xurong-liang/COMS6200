@@ -36,10 +36,12 @@ def init_class_metrics(text_mapping: dict, have_merged: bool = True) -> dict:
     return class_metrics
 
 
-def evaluate_a_data_frame(info: dict):
+def evaluate_a_data_frame(info: dict, have_merged: bool = True):
     """
-    The parameter
+    Process target function
+
     :param info: The dictionary that contains all information to evaluate a data frame
+    :param have_merged: whether we compute Merged (all types) performance
     """
     all_folder_indices = info["train_test_indices"]
 
@@ -50,7 +52,7 @@ def evaluate_a_data_frame(info: dict):
     classifier_type = info["classifier_type"]
     seed = info["seed"]
     text_mapping = info["text_mapping"]
-    class_metrics = init_class_metrics(text_mapping)
+    class_metrics = init_class_metrics(text_mapping, have_merged=have_merged)
 
     for train_idxes, test_idxes in all_folder_indices:
         train_features, train_labels = data_frame.iloc[train_idxes], one_hot_labels[train_idxes, :]
@@ -81,6 +83,9 @@ def evaluate_a_data_frame(info: dict):
         metrics = class_metrics[text_label]
         for key, value in metrics.items():
             metrics[key] = np.array(value).mean()
+    if have_merged:
+        for key, value in class_metrics["Merged"].items():
+            class_metrics["Merged"][key] = np.array(value).mean()
 
     performance_text = generate_class_performance_text(res_dict=class_metrics)
     save_result_text(classifier=classifier_type, hyper="default", data_method=data_method,
