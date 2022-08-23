@@ -26,31 +26,45 @@ def get_data_frame(base_dir: str = "./dataset/", data_method: str = 'minmax'):
         return
 
     df = pd.read_csv(df_dir)
+    text_ordinal_mapping = {}
+    for text, ordinal in zip(pd.unique(df['text_label']), pd.unique(df["ordinal_label"])):
+        text_ordinal_mapping[text] = ordinal
+    return tuple([df] + list(get_one_hot_labels_and_mappings(df["ordinal_label"], text_ordinal_mapping)))
 
-    one_hot_labels, one_hot_mapping = get_one_hot_labels_and_mapping(df["ordinal_label"])
 
-    return df, one_hot_labels, one_hot_mapping
-
-
-def get_one_hot_labels_and_mapping(labels: pd.DataFrame) -> tuple:
+def get_one_hot_labels_and_mappings(labels: pd.DataFrame, text_ordinal_mapping: dict) -> tuple:
     """
     Get one-hot encoded labels for dataset,
     along with mapping {ordinal_label: one-hot vector}
 
     :param labels: the label column of the DF to be encoded
-    :return: (one-hot labels, mapping {ordinal_label: one-hot vector})
+    :param text_ordinal_mapping: {"text label": ordinal label} mapping
+    :return: (
+                one-hot labels,
+                text_mapping: {text_label: (position of 1 in the one-hot vector, corresponding one-hot vector)},
+                ordinal_mapping {ordinal_label: (position of 1 in the one-hot vector, corresponding one-hot vector)},
+                one_pos_text_mapping {position of 1 in the one-hot vector, (text_label, corresponding one-hot vector)}
+            ) tuple
     """
     encoder = OneHotEncoder(sparse=False)
 
     labels = np.asarray(labels).reshape(len(labels), 1)
-    one_hot_labels = encoder.fit_transform(labels)
+    res = encoder.fit_transform(labels)
 
-    encode_mapping = {}
-    one_hot_labels = np.unique(one_hot_labels, axis=0)
-    origin_labels = encoder.inverse_transform(one_hot_labels).reshape(-1)
-    for origin, one_hot in zip(origin_labels, one_hot_labels):
-        encode_mapping[origin] = one_hot
-    return one_hot_labels, encode_mapping
+    ordinal_text_mapping = {v: k for k, v in text_ordinal_mapping.items()}
+
+    ordinal_mapping = {}
+    text_mapping = {}
+    one_pos_text_mapping = {}
+    one_hot_labels = np.unique(res, axis=0)
+    ordinal_labels = encoder.inverse_transform(one_hot_labels).reshape(-1)
+    for ordinal, one_hot in zip(ordinal_labels, one_hot_labels):
+        pos_in_one_hot = np.where(one_hot == 1)[0][0]
+        text = ordinal_text_mapping[ordinal]
+        ordinal_mapping[ordinal] = pos_in_one_hot, one_hot
+        text_mapping[text] = pos_in_one_hot, one_hot
+        one_pos_text_mapping[pos_in_one_hot] = text, one_hot
+    return res, text_mapping, ordinal_mapping, one_pos_text_mapping
 
 
 def get_train_test_indices_for_all_folds(dataframe: pd.DataFrame, k: int = 3,
@@ -73,7 +87,7 @@ if __name__ == "__main__":
     # test functionality of methods listed in this script
 
     # zscore dataset, compute one-hot encodings and mapping
-    df, one_hot_labels, one_hot_mapping = get_data_frame(data_method='zscore')
+    df, one_hot_labels, text_mapping, ordinal_mapping, one_pos_text_mapping = get_data_frame(data_method='zscore')
 
     res = get_train_test_indices_for_all_folds(df)
 
