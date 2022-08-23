@@ -162,7 +162,8 @@ if __name__ == "__main__":
                 'text_mapping': params[2],
                 'one_pos_text_mapping': params[4],
                 "classifier_type": c_type,
-                "seed": 2022
+                "seed": 2022,
+                "data_method": method
             }
             p = Process(target=evaluate_a_data_frame, args=(inputs,))
             print(f"Now start {c_type} on {method} dataset")
