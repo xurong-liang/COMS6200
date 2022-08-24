@@ -132,3 +132,6 @@ dmypy.json
 
 # exclude dataset
 dataset
+
+# exclude my own test notebook
+test.ipynb
