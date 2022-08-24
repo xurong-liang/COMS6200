@@ -16,16 +16,6 @@ from tqdm import tqdm
 from evaluate import *
 import time
 
-def reset_weights(m):
-    """
-    Try resetting model weights to avoid
-    weight leakage.
-    """
-    for layer in m.children():
-        if hasattr(layer, 'reset_parameters'):
-            print(f'Reset trainable parameters of layer = {layer}')
-            layer.reset_parameters()
-
 class MLP(nn.Module):
     def __init__(self, input_dim=58, output_dim=1):
         super().__init__()
