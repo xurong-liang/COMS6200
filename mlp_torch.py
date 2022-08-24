@@ -2,14 +2,10 @@
 Implement the Multilayer Perception (MLP) Classifier using Pytorch
 """
 
-from cProfile import label
-import os
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-from torchvision import transforms
 from torch.utils.data import Dataset
-from sklearn.model_selection import KFold, train_test_split
 import torch.nn.functional as F
 from dataloader import *
 from tqdm import tqdm
@@ -78,14 +74,15 @@ class Runner():
             train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx)
             test_subsampler = torch.utils.data.SubsetRandomSampler(test_idx)
 
-            train_loader = torch.utils.data.DataLoader(
+            train_loader = DataLoader(
                                 self.ds, 
                                 batch_size=self.batch_size,
                                 sampler=train_subsampler)
-            test_loader = torch.utils.data.DataLoader(
+            test_loader = DataLoader(
                                 self.ds,
                                 batch_size=len(test_idx), 
-                                sampler=test_subsampler)
+                                sampler=test_subsampler
+                                )
 
             # model.apply(reset_weights)
 
@@ -97,9 +94,10 @@ class Runner():
         end = time.time()
         
         target, pred = self.test(fold, test_loader, test_idx, val=False)
-
+        if self.device.type == 'cuda':
+            target, pred = target.cpu(), pred.cpu()
         class_metric = {}
-        dict_metric = compute_metric_values(target.cpu().detach().numpy(), pred.cpu().detach().numpy())
+        dict_metric = compute_metric_values(target.detach().numpy(), pred.detach().numpy())
         dict_metric["Training time"] = round(end - start, 2)
         class_name = self.ds.get_text_label()
         class_metric[class_name] = dict_metric
@@ -119,8 +117,6 @@ class Runner():
             loss = self.loss_fn(output, target)
             loss.backward()
             self.optimizer.step()
-            # if batch_idx % 320 == 0:
-            #     print(f"Loss: {loss.item():.4f}")
 
     def test(self, epoch, test_loader, test_idx, val=True):
         self.model.eval()
@@ -132,8 +128,8 @@ class Runner():
             for data, target in tqdm(test_loader):
                 data, target = data.to(self.device), target.to(self.device)
                 output = self.model(data)
-                test_loss += self.loss_fn(output, target, reduction='sum').item()  # sum up batch loss
-                pred = torch.where(output >= 0.5, 1, 0)  # get the index of the max log-probability
+                test_loss += self.loss_fn(output, target, reduction='sum').item()  
+                pred = torch.where(output >= 0.5, 1, 0) 
                 correct += pred.eq(target.view_as(pred)).sum().item()
 
         test_loss /= len(test_idx)
