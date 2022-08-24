@@ -82,9 +82,9 @@ def generate_class_performance_text(res_dict: dict) -> str:
         for count, item in enumerate(metrics.items()):
             metric_name, val = item
             if metric_name.lower().replace(" ", '_') == 'training_time':
-                text += f"training time: {val:>.4f}s"
+                text += f"training time: {val:>.8f}s"
             else:
-                text += f"{metric_name}: {val:>.4f}"
+                text += f"{metric_name}: {val:>.8f}"
             if count == len(metrics) - 1:
                 text += "]\n"
             else:

@@ -9,6 +9,7 @@ from evaluate import compute_metric_values, generate_class_performance_text, sav
 import numpy as np
 import copy
 from multiprocessing import Process
+from datetime import timedelta
 
 
 def init_class_metrics(text_mapping: dict, have_merged: bool = True) -> dict:
@@ -29,10 +30,10 @@ def init_class_metrics(text_mapping: dict, have_merged: bool = True) -> dict:
 
     class_metrics = {}
     for class_name in text_mapping.keys():
-        class_metrics[class_name] = copy.copy(metrics)
+        class_metrics[class_name] = copy.deepcopy(metrics)
 
     if have_merged:
-        class_metrics['Merged'] = copy.copy(metrics)
+        class_metrics['Merged'] = copy.deepcopy(metrics)
     return class_metrics
 
 
@@ -75,6 +76,7 @@ def evaluate_a_data_frame(info: dict, have_merged: bool = True):
                 # normal class gets label 0, other classes all 1's
                 batch_train_labels = np.bitwise_not(batch_train_labels.astype(bool)).astype(float)
                 batch_ground_truth = np.bitwise_not(batch_ground_truth.astype(bool)).astype(float)
+                class_name = "Merged"
                 class_metrics = batch_runner(train_features, batch_train_labels,
                                              test_features, batch_ground_truth, class_metrics,
                                              classifier_type, seed, class_name=class_name)
@@ -82,10 +84,17 @@ def evaluate_a_data_frame(info: dict, have_merged: bool = True):
     for text_label in text_mapping.keys():
         metrics = class_metrics[text_label]
         for key, value in metrics.items():
-            metrics[key] = np.array(value).mean()
+            metrics[key] = np.array(value)
+            if key == "training time":
+                metrics[key] = metrics[key].sum()
+            else:
+                metrics[key] = metrics[key].mean()
     if have_merged:
         for key, value in class_metrics["Merged"].items():
-            class_metrics["Merged"][key] = np.array(value).mean()
+            if key == "training time":
+                class_metrics["Merged"][key] = np.array(value).sum()
+            else:
+                class_metrics["Merged"][key] = np.array(value).mean()
 
     performance_text = generate_class_performance_text(res_dict=class_metrics)
     save_result_text(classifier=classifier_type, hyper="default", data_method=data_method,
@@ -152,6 +161,7 @@ def test_a_batch(features, ground_truth, model):
 
 
 if __name__ == "__main__":
+    total_start = timer()
     processes = []
 
     for method in ["minmax", "unnormalized", "zscore"]:
@@ -177,4 +187,5 @@ if __name__ == "__main__":
 
     for p in processes:
         p.join()
-    print('All processes finished.')
+    total_end = timer()
+    print(f'All processes finished, total elapsed time {timedelta(seconds=total_end - total_start)}.')
