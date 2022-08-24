@@ -16,6 +16,12 @@ def get_data_frame(base_dir: str = "./dataset/", data_method: str = 'minmax'):
     :param base_dir: location of the dataset directory
     :param data_method: the dataset to be imported, options: [minmax, unnormalized, zscore]
     :return: (the loaded DF, one-hot-encoding arrays, mapping {ordinal_label: one-hot vector})
+    Format of return: (df, 
+                       one-hot labels, 
+                       text label: (ordinal label, onehot label),
+                       ordinal label: (ordinal label, onehot label), 
+                       ordinal label: (text label, onehot label)
+                       )
     """
     if data_method not in ["minmax", "unnormalized", "zscore"]:
         print("Data method should be in [minmax, unnormalized, zscore]")
