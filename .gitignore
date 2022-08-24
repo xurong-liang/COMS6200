@@ -131,4 +131,4 @@ dmypy.json
 
 
 # exclude dataset
-./dataset/
+dataset
