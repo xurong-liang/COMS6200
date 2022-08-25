@@ -31,53 +31,73 @@ class MLP(nn.Module):
         self.output_fc = nn.Linear(100, output_dim)
 
     def forward(self, x):
-        batch_size = x.shape[0]
-        x = x.view(batch_size, -1)
         h_1 = F.relu(self.input_fc(x))
         h_2 = F.relu(self.hidden_fc(h_1))
         y_pred = torch.sigmoid(self.output_fc(h_2))
         return torch.flatten(y_pred)
 
 class MyDataset(Dataset):
-    def __init__(self, ordinal_label):
-        self.df, self.onehot, self.label2, self.label3, self.label4 = get_data_frame()
-        self.df['ordinal_label'] = self.df['ordinal_label'].apply(lambda x: 1 if x == ordinal_label else 0)
-        X = self.df.drop(columns = ['text_label', 'ordinal_label']).values
-        y = self.onehot[:, ordinal_label]
+    def __init__(self, ordinal_label, data_method="minmax"):
+        df, onehot, self.label2, self.label3, self.label4 = get_data_frame(data_method=data_method)
+        self.folds = get_train_test_indices_for_all_folds(df, k=3)
+        if ordinal_label != 0:
+            # identify each particular type of attack
+            # label with the correct attack = 1, otherwise 0 
+            df['ordinal_label'] = df['ordinal_label'].apply(lambda x: 1 if x == ordinal_label else 0)
+            y = onehot[:, ordinal_label].astype(int)
+            
+        else:
+            # identify attack fron normal
+            # attack = 1, otherwise 0 
+            df['ordinal_label'] = df['ordinal_label'].apply(lambda x: 1 if x != 0 else 0)
+            y = onehot[:, ordinal_label].astype(int)
+            y ^= 1 # flipping 0 and 1 since onehot normal = 1, need to convert to 0
+
+        X = df.drop(columns = ['text_label', 'ordinal_label']).values
+        
         self.X = torch.tensor(X, dtype=torch.float32)
         self.y = torch.tensor(y, dtype=torch.float32)
         self.ordinal_label = ordinal_label
-    
+        
+
     def __len__(self):
         return len(self.y)
     
+
+    def get_folds(self):
+        return self.folds
+
+
     def __getitem__(self, idx):
         return self.X[idx], self.y[idx]
 
-    def get_df(self):
-        return self.df
 
     def get_text_label(self):
         return self.label4[self.ordinal_label][0]
+
 
     def get_onehot_label(self):
         return self.label4[self.ordinal_label][1]
 
 
 class Runner():
-    def __init__(self, epoch=2, batch_size=128, ordinal_label=0):
-        self.ordinal_label = ordinal_label
-        self.ds = MyDataset(ordinal_label=0)
+    def __init__(self, epoch=10, batch_size=128, ordinal_label=0, data_method="minmax"):
+        self.ds = MyDataset(ordinal_label, data_method)
+        self.text_label = self.ds.get_text_label()
         self.epoch = epoch
         self.batch_size = batch_size
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
+
+    def get_text_label(self): 
+        return self.text_label
+
+
     def run(self):
-        folds = get_train_test_indices_for_all_folds(self.ds.get_df(), k=2)
+        folds = self.ds.get_folds()
         start = time.time()
         result_folds = []
         for fold, (train_idx, test_idx) in enumerate(folds):
-            
             print(f'---fold no----{fold+1}---')
             train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx)
             test_subsampler = torch.utils.data.SubsetRandomSampler(test_idx)
@@ -102,27 +122,15 @@ class Runner():
             for epoch in range(self.epoch):
                 print(f'---epoch no---{epoch+1}---')
                 self.train(train_loader, model, optimizer, loss_fn)
-                metrics_dict = self.test(epoch, test_loader, model, loss_fn, test_idx)
-                result_folds.append(metrics_dict)
+
+            metrics_dict = self.test(fold, test_loader, model, loss_fn, test_idx)
+            result_folds.append(metrics_dict)
 
         end = time.time()
-            #     {
-            #     "accuracy": acc,
-            #     "precision": precision,
-            #     'recall': recall,
-            #     "f1": f1
-            #      }
+        return self.save_results(result_folds, start, end)
 
-            # {
-            #     "normal": {
-            #                 "accuracy": acc,
-            #                 "precision": precision,
-            #                 'recall': recall,
-            #                 "f1": f1,
-            #                 "training time": training time
-            #             }
-            # }
 
+    def save_results(self, result_folds: list, start: float, end: float):
         dict_metrics = {}
         for metric in ["accuracy", "precision", "recall", "f1"]:
             dict_metrics[metric] = []
@@ -136,15 +144,7 @@ class Runner():
             dict_metrics[metric] = np.asarray(all_metrics).mean()
 
         dict_metrics["Training time"] = round(end - start, 2)
-
-        class_name = self.ds.get_text_label()
-        class_metrics = {}
-        class_metrics[class_name] = dict_metrics
-        perf_text = generate_class_performance_text(class_metrics)
-        save_result_text(classifier="MLP", 
-                        hyper="hidden_layer_80_100", 
-                        data_method="minmax",
-                        class_performance_text=perf_text)
+        return dict_metrics
 
 
     def train(self, train_loader, model, optimizer, loss_fn):
@@ -157,7 +157,7 @@ class Runner():
             loss.backward()
             optimizer.step()
 
-    def test(self, epoch, test_loader, model, loss_fn, test_idx):
+    def test(self, fold, test_loader, model, loss_fn, test_idx):
         model.eval()
         loss = 0
         correct = 0
@@ -173,7 +173,7 @@ class Runner():
 
         loss /= len(test_idx)
         text = ""
-        text += f'\nTest set for epoch {epoch+1}: Average loss: {loss:.4f}, '
+        text += f'\nTest set for fold {fold+1}: Average loss: {loss:.4f}, '
         text += f'Accuracy: {correct}/{len(test_idx)} ({ correct / len(test_idx):.8f})\n'
         print(text)
 
@@ -195,8 +195,26 @@ def main():
     'U2R': (1, array([0., 1., 0., 0., 0., 0., 0., 0.])),
     'Normal': (0, array([1., 0., 0., 0., 0., 0., 0., 0.]))}
     """
-    runner = Runner(ordinal_label=1)
-    runner.run()
+    start = time.time()
+    for norm in ["minmax", "unnormalized", "zscore"]:
+        print(f"---Testing with \"{norm}\" norm method---")
+        class_metrics = {}
+        for label in range(8):
+            runner = Runner(ordinal_label=label, epoch=10, data_method=norm)
+            text_label = runner.get_text_label()
+            print(f"---Testing with label \"{text_label}\"")
+            dict_metrics = runner.run()
+            class_metrics[text_label] = dict_metrics
+
+        perf_text = generate_class_performance_text(class_metrics)
+        save_result_text(classifier="MLP", 
+                        hyper="hidden_layer_80_100",
+                        data_method=norm,
+                        class_performance_text=perf_text)
+
+    end = time.time()
+    print(f"\nFinished training in {(end - start):.0f}s")
+
 
 if __name__ == '__main__':
     main()
