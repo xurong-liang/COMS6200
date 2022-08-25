@@ -1,0 +1,12 @@
+Classifier: MLP
+Data Method: unnormalized
+Hyper: hidden_layer_80_100
+class: Normal, [accuracy: 0.79662621, precision: 0.80853399, recall: 0.97836386, f1: 0.88514051, training time: 224.26000000s]
+class: U2R, [accuracy: 0.22517860, precision: 0.00003500, recall: 0.66666667, f1: 0.00007000, training time: 224.82000000s]
+class: BFA, [accuracy: 0.64207994, precision: 0.00144328, recall: 0.33333333, f1: 0.00287412, training time: 225.20000000s]
+class: DDoS, [accuracy: 0.39630302, precision: 0.19001029, recall: 0.49576855, f1: 0.27410843, training time: 221.56000000s]
+class: DoS, [accuracy: 0.84406015, precision: 0.00000000, recall: 0.00000000, f1: 0.00000000, training time: 219.78000000s]
+class: Probe, [accuracy: 0.58037858, precision: 0.10743334, recall: 0.33371038, f1: 0.16148804, training time: 220.04000000s]
+class: Web-Attack, [accuracy: 0.64961162, precision: 0.00018764, recall: 0.33333333, f1: 0.00037506, training time: 219.68000000s]
+class: BOTNET, [accuracy: 0.00050016, precision: 0.00047691, recall: 1.00000000, f1: 0.00095336, training time: 219.10000000s]
+
