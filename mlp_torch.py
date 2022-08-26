@@ -40,19 +40,13 @@ class MyDataset(Dataset):
     def __init__(self, ordinal_label, data_method="minmax"):
         df, onehot, self.label2, self.label3, self.label4 = get_data_frame(data_method=data_method)
         self.folds = get_train_test_indices_for_all_folds(df, k=3)
-        if ordinal_label != 0:
-            # identify each particular type of attack
-            # label with the correct attack = 1, otherwise 0 
-            df['ordinal_label'] = df['ordinal_label'].apply(lambda x: 1 if x == ordinal_label else 0)
-            y = onehot[:, ordinal_label].astype(int)
-            
-        else:
-            # identify attack fron normal
-            # attack = 1, otherwise 0 
-            df['ordinal_label'] = df['ordinal_label'].apply(lambda x: 1 if x != 0 else 0)
-            y = onehot[:, ordinal_label].astype(int)
-            y ^= 1 # flipping 0 and 1 since onehot normal = 1, need to convert to 0
+        # label with the correct attack = 1, otherwise 0 
+        # ordinal label correspond to the column in onehot vector
+        y = onehot[:, ordinal_label].astype(int)
 
+        if ordinal_label == 0:
+            y ^= 1 # flipping 0 and 1 since onehot normal = 1, need to convert to 0
+            
         X = df.drop(columns = ['text_label', 'ordinal_label']).values
         
         self.X = torch.tensor(X, dtype=torch.float32)
