@@ -1,13 +1,12 @@
 Classifier: random_forest
 Data Method: zscore
 Hyper: default
-class: BOTNET, [accuracy: 0.99999709, precision: 1.00000000, recall: 0.99393939, f1: 0.99694190, training time: 46.35103623s]
-class: Web-Attack, [accuracy: 0.99999418, precision: 1.00000000, recall: 0.98958333, f1: 0.99470899, training time: 64.90025750s]
-class: Probe, [accuracy: 0.99995057, precision: 0.99998981, recall: 0.99983695, f1: 0.99991337, training time: 123.30580563s]
-class: DoS, [accuracy: 0.99998255, precision: 0.99996270, recall: 0.99992540, f1: 0.99994405, training time: 119.22149803s]
-class: DDoS, [accuracy: 0.99996511, precision: 0.99995900, recall: 0.99994260, f1: 0.99995080, training time: 73.42583471s]
-class: BFA, [accuracy: 0.99999128, precision: 1.00000000, recall: 0.99786325, f1: 0.99892972, training time: 89.59138863s]
-class: U2R, [accuracy: 0.99996801, precision: 0.66666667, recall: 0.36666667, f1: 0.47222222, training time: 47.76301387s]
-class: Normal, [accuracy: 0.99999128, precision: 0.99995616, recall: 1.00000000, f1: 0.99997808, training time: 97.76944789s]
-class: Merged, [accuracy: 0.99999128, precision: 1.00000000, recall: 0.99998911, f1: 0.99999455, training time: 83.46228125s]
+class: BOTNET, [accuracy: 0.99999709, precision: 1.00000000, recall: 0.99393939, f1: 0.99694190, training time: 45.15486052s]
+class: Web-Attack, [accuracy: 0.99999418, precision: 1.00000000, recall: 0.98958333, f1: 0.99470899, training time: 67.47741908s]
+class: Probe, [accuracy: 0.99995057, precision: 0.99998981, recall: 0.99983695, f1: 0.99991337, training time: 119.88016750s]
+class: DoS, [accuracy: 0.99998255, precision: 0.99996270, recall: 0.99992540, f1: 0.99994405, training time: 128.09361149s]
+class: DDoS, [accuracy: 0.99996511, precision: 0.99995900, recall: 0.99994260, f1: 0.99995080, training time: 71.19473230s]
+class: BFA, [accuracy: 0.99999128, precision: 1.00000000, recall: 0.99786325, f1: 0.99892972, training time: 90.78118036s]
+class: U2R, [accuracy: 0.99996801, precision: 0.66666667, recall: 0.36666667, f1: 0.47222222, training time: 45.00030075s]
+class: Normal, [accuracy: 0.99999128, precision: 1.00000000, recall: 0.99998911, f1: 0.99999455, training time: 90.39461680s]
 
