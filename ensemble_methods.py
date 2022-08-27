@@ -12,12 +12,11 @@ from multiprocessing import Process
 from datetime import timedelta
 
 
-def init_class_metrics(text_mapping: dict, have_merged: bool = True) -> dict:
+def init_class_metrics(text_mapping: dict) -> dict:
     """
     Initialize the metrics dict that records all performance results
 
     :param text_mapping: {text_label: (position of 1 in the one-hot vector, corresponding one-hot vector)}
-    :param have_merged: whether we compute Merged (all types) performance
     :return: the result dict in form {"class_name": {"metric_name": []}}
     """
     metrics = {
@@ -31,18 +30,14 @@ def init_class_metrics(text_mapping: dict, have_merged: bool = True) -> dict:
     class_metrics = {}
     for class_name in text_mapping.keys():
         class_metrics[class_name] = copy.deepcopy(metrics)
-
-    if have_merged:
-        class_metrics['Merged'] = copy.deepcopy(metrics)
     return class_metrics
 
 
-def evaluate_a_data_frame(info: dict, have_merged: bool = True):
+def evaluate_a_data_frame(info: dict):
     """
     Process target function
 
     :param info: The dictionary that contains all information to evaluate a data frame
-    :param have_merged: whether we compute Merged (all types) performance
     """
     all_folder_indices = info["train_test_indices"]
 
@@ -53,7 +48,7 @@ def evaluate_a_data_frame(info: dict, have_merged: bool = True):
     classifier_type = info["classifier_type"]
     seed = info["seed"]
     text_mapping = info["text_mapping"]
-    class_metrics = init_class_metrics(text_mapping, have_merged=have_merged)
+    class_metrics = init_class_metrics(text_mapping)
 
     for train_idxes, test_idxes in all_folder_indices:
         train_features, train_labels = data_frame.iloc[train_idxes], one_hot_labels[train_idxes, :]
@@ -66,20 +61,14 @@ def evaluate_a_data_frame(info: dict, have_merged: bool = True):
             batch_ground_truth = ground_truth[:, one_pos]
 
             assert not np.all(batch_ground_truth == 0) and not np.all(batch_train_labels == 0)
-            class_metrics = batch_runner(train_features, batch_train_labels,
-                                         test_features, batch_ground_truth, class_metrics,
-                                         classifier_type, seed, class_name=class_name)
-
             if class_name == "Normal":
                 # compute all combined scores
-
                 # normal class gets label 0, other classes all 1's
                 batch_train_labels = np.bitwise_not(batch_train_labels.astype(bool)).astype(float)
                 batch_ground_truth = np.bitwise_not(batch_ground_truth.astype(bool)).astype(float)
-                class_name = "Merged"
-                class_metrics = batch_runner(train_features, batch_train_labels,
-                                             test_features, batch_ground_truth, class_metrics,
-                                             classifier_type, seed, class_name=class_name)
+            class_metrics = batch_runner(train_features, batch_train_labels,
+                                         test_features, batch_ground_truth, class_metrics,
+                                         classifier_type, seed, class_name=class_name)
 
     for text_label in text_mapping.keys():
         metrics = class_metrics[text_label]
@@ -89,12 +78,6 @@ def evaluate_a_data_frame(info: dict, have_merged: bool = True):
                 metrics[key] = metrics[key].sum()
             else:
                 metrics[key] = metrics[key].mean()
-    if have_merged:
-        for key, value in class_metrics["Merged"].items():
-            if key == "training time":
-                class_metrics["Merged"][key] = np.array(value).sum()
-            else:
-                class_metrics["Merged"][key] = np.array(value).mean()
 
     performance_text = generate_class_performance_text(res_dict=class_metrics)
     save_result_text(classifier=classifier_type, hyper="default", data_method=data_method,
