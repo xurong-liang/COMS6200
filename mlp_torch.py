@@ -1,5 +1,6 @@
 """
 Implement the Multilayer Perception (MLP) Classifier using Pytorch
+Functions: loading data, training, testing and saving results
 """
 
 import torch
@@ -12,17 +13,22 @@ from tqdm import tqdm
 from evaluate import *
 import time
 
+
 def reset_weights(m):
     """
-    Try resetting model weights to avoid
-    weight leakage.
+    Reset model weights to avoid weight leakage.
     """
     for layer in m.children():
         if hasattr(layer, 'reset_parameters'):
-            # print(f'Reset trainable parameters of layer = {layer}')
             layer.reset_parameters()
 
 class MLP(nn.Module):
+    """
+    Multilayer perceptron model
+
+    :param input_dim: number of features in the dataset
+    :param output_dim: number of classes (1 for binary - probability between 0 and 1)
+    """
     def __init__(self, input_dim=58, output_dim=1):
         super().__init__()
 
@@ -31,12 +37,24 @@ class MLP(nn.Module):
         self.output_fc = nn.Linear(100, output_dim)
 
     def forward(self, x):
+        """
+        Forward the data over the model
+        
+        :param x: datapoints
+        :return prediction probability between 0 and 1
+        """
         h_1 = F.relu(self.input_fc(x))
         h_2 = F.relu(self.hidden_fc(h_1))
         y_pred = torch.sigmoid(self.output_fc(h_2))
         return torch.flatten(y_pred)
 
 class MyDataset(Dataset):
+    """
+    Dataset class, to be used with DataLoader
+
+    :param ordinal_label: Numerical label (between 0 and 7 in InSDN dataset)
+    :param data_method: the dataset to be imported, options: [minmax, unnormalized, zscore] 
+    """
     def __init__(self, ordinal_label, data_method="minmax"):
         df, onehot, self.label2, self.label3, self.label4 = get_data_frame(data_method=data_method)
         self.folds = get_train_test_indices_for_all_folds(df, k=3)
@@ -59,6 +77,9 @@ class MyDataset(Dataset):
     
 
     def get_folds(self):
+        """
+        Get the train and test fold indices
+        """
         return self.folds
 
 
@@ -67,14 +88,28 @@ class MyDataset(Dataset):
 
 
     def get_text_label(self):
+        """
+        Get the text label, derived from ordinal label
+        """
         return self.label4[self.ordinal_label][0]
 
 
     def get_onehot_label(self):
+        """
+        Get the one-hot label, derived from ordinal label
+        """
         return self.label4[self.ordinal_label][1]
 
 
 class Runner():
+    """
+    Runner class, handle training and testing and saving results
+
+    :param epoch: Number of epoch in training
+    :param batch_size: Number of datapoints in a batch
+    :param ordinal_label: Numerical label (between 0 and 7 in InSDN dataset)
+    :param data_method: the dataset to be imported, options: [minmax, unnormalized, zscore] 
+    """
     def __init__(self, epoch=10, batch_size=128, ordinal_label=0, data_method="minmax"):
         self.ds = MyDataset(ordinal_label, data_method)
         self.text_label = self.ds.get_text_label()
@@ -84,10 +119,18 @@ class Runner():
     
 
     def get_text_label(self): 
+        """
+        Get the text label of the current class for classification
+        """
         return self.text_label
 
 
     def run(self):
+        """
+        Model training, with k-fold cross validation
+
+        :return a dict with average metrics (acc, precision, recall, f1) of all k-folds 
+        """
         folds = self.ds.get_folds()
         start = time.time()
         result_folds = []
@@ -125,6 +168,14 @@ class Runner():
 
 
     def save_results(self, result_folds: list, start: float, end: float):
+        """
+        Save average metrics (acc, precision, recall, f1) of all k-folds  
+
+        :param results_folds: a list containing results of all folds
+        :param start: start time of k-fold training
+        :param end: end time of k-fold training
+        :return a dict with average metrics (acc, precision, recall, f1) of all k-folds 
+        """
         dict_metrics = {}
         for metric in ["accuracy", "precision", "recall", "f1"]:
             dict_metrics[metric] = []
@@ -142,6 +193,14 @@ class Runner():
 
 
     def train(self, train_loader, model, optimizer, loss_fn):
+        """
+        Model training function
+
+        :param train_loader: pytorch train data loader
+        :param model: pytorch ML model
+        :param optimizer: pytorch optimizer function
+        :param loss_fn: pytorch loss function
+        """
         model.train()
         for (data, target) in tqdm(train_loader):
             data, target = data.to(self.device), target.to(self.device)
@@ -152,6 +211,16 @@ class Runner():
             optimizer.step()
 
     def test(self, fold, test_loader, model, loss_fn, test_idx):
+        """
+        Model testing function
+
+        :param fold: number of fold
+        :param test_loader: pytorch test data loader
+        :param model: pytorch ML model
+        :param optimizer: pytorch optimizer function
+        :param loss_fn: pytorch loss function
+        :param test_idx: test indices list (for getting length of test data)
+        """
         model.eval()
         loss = 0
         correct = 0
@@ -179,6 +248,10 @@ class Runner():
 
         
 def main():
+    """
+    Main function of MLP training model in InSDN project
+    """
+
     """
     {'BOTNET': (7, array([0., 0., 0., 0., 0., 0., 0., 1.])),
     'Web-Attack': (6, array([0., 0., 0., 0., 0., 0., 1., 0.])),
