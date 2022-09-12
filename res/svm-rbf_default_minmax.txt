@@ -1,0 +1,12 @@
+Classifier: svm-rbf
+Data Method: minmax
+Hyper: default
+class: BOTNET, [accuracy: 0.99976155, precision: 1.00000000, recall: 0.49988777, f1: 0.66633759, training time: 30.36455099s]
+class: Web-Attack, [accuracy: 0.99945040, precision: 0.33333333, recall: 0.01562500, f1: 0.02985075, training time: 37.40036863s]
+class: Probe, [accuracy: 0.99685073, precision: 0.99548657, recall: 0.99346778, f1: 0.99447614, training time: 5655.52279986s]
+class: DoS, [accuracy: 0.99751664, precision: 0.98821156, recall: 0.99595270, f1: 0.99206702, training time: 846.94967150s]
+class: DDoS, [accuracy: 0.99984297, precision: 0.99990157, recall: 0.99965557, f1: 0.99977855, training time: 56.73851022s]
+class: BFA, [accuracy: 0.99998255, precision: 0.99645239, recall: 0.99928775, f1: 0.99786780, training time: 40.13330228s]
+class: U2R, [accuracy: 0.99995057, precision: 0.00000000, recall: 0.00000000, f1: 0.00000000, training time: 8.66833700s]
+class: Normal, [accuracy: 0.99999418, precision: 1.00000000, recall: 0.99999274, f1: 0.99999637, training time: 35.43400059s]
+

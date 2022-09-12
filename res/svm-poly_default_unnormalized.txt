@@ -1,0 +1,13 @@
+Classifier: svm-poly
+Data Method: unnormalized
+Hyper: default
+class: BOTNET, [accuracy: 0.99952310, precision: 0.00000000, recall: 0.00000000, f1: 0.00000000, training time: 1831.58740917s]
+class: Web-Attack, [accuracy: 0.99944168, precision: 0.00000000, recall: 0.00000000, f1: 0.00000000, training time: 3649.51653956s]
+class: DDoS , [accuracy: 0.85921911, precision: 0.00000000, recall: 0.00000000, f1: 0.00000000, training time: 23440.90017851s]
+class: Probe, [accuracy: 0.80037745, precision: 0.83184325, recall: 0.37655535, f1: 0.51842909, training time: 21396.78913005s]
+class: DoS, [accuracy: 0.84403398, precision: 0.00000000, recall: 0.00000000, f1: 0.00000000, training time: 5595.60650616s]
+class: DDoS, [accuracy: 0.86024851, precision: 0.63788569, recall: 0.80123494, f1: 0.71028902, training time: 12000.87254534s]
+class: BFA, [accuracy: 0.99591438, precision: 0.00000000, recall: 0.00000000, f1: 0.00000000, training time: 865.19291854s]
+class: U2R, [accuracy: 0.99995057, precision: 0.00000000, recall: 0.00000000, f1: 0.00000000, training time: 12.35034554s]
+class: Normal, [accuracy: 0.84629342, precision: 0.83945504, recall: 0.99921224, f1: 0.91239313, training time: 18259.12976564s]
+
