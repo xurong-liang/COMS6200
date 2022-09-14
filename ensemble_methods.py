@@ -80,7 +80,6 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
                                         model=model)
             for metric, value in class_result.items():
                 class_metrics[method][metric].append(value)
-            break
 
     for method in class_imbalanced_methods:
         metrics = class_metrics[method]
