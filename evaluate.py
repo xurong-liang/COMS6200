@@ -27,17 +27,24 @@ def compute_metric_values(y_true, y_preds):
 
 
 def save_result_text(classifier: str, hyper: str, data_method: str,
-                     class_performance_text: str, res_dir: str = "./res/"):
+                     class_performance_text: str, res_dir: str = "./res/",
+                     imbalanced_problem: bool = False):
     """
     Output the evaluation result to stdout and res_dir.
     The output file will have the name of {classifier}_{hyper}.txt
 
     :param class_performance_text:
     :param classifier: Name of classifier
-    :param hyper: Name of parameter
+    :param hyper: Name of parameter. If address imbalanced dataset,
+     write method to address it as well: e.g. linear_undersampling
     :param data_method: [unnormalized, minmax, zscore]
     :param res_dir: the directory where the result is saved
+    :param imbalanced_problem: if the result is computed to address the problem of
+        imbalanced dataset, if yes, then save to res_dir/address_imbalanced_res/
     """
+    if imbalanced_problem:
+        res_dir = os.path.join(res_dir, "address_imbalanced_res")
+
     if not os.path.exists(res_dir):
         os.mkdir(res_dir)
 
@@ -57,7 +64,7 @@ def save_result_text(classifier: str, hyper: str, data_method: str,
         print(text, file=f)
 
 
-def generate_class_performance_text(res_dict: dict) -> str:
+def generate_class_performance_text(res_dict: dict, imbalanced_problem: bool = False) -> str:
     """
     This method takes all classes in res_dict, and generate performance text
     for all the classes.
@@ -73,22 +80,30 @@ def generate_class_performance_text(res_dict: dict) -> str:
                             "training time": training time
                         }
             }
+    :param imbalanced_problem: if the input results come from imbalanced problem computation
     :return: the performance text, each class in form
         class: xxx, [accuracy: xxx, precision: xxx, recall: xxx, f1: xxx, training time: xxxs]
     """
     text = ""
+    if imbalanced_problem:
+        entity_name = "method"
+    else:
+        entity_name = "class"
+
     for class_name, metrics in res_dict.items():
-        text += f"class: {class_name}, ["
+        text += f"{entity_name}: {class_name}, [\n"
         for count, item in enumerate(metrics.items()):
             metric_name, val = item
             if metric_name.lower().replace(" ", '_') == 'training_time':
                 text += f"training time: {val:>.8f}s"
+            elif metric_name.lower().replace(" ", '_') == "new_train_label_distributions":
+                text += f"new train distribution: {val}"
             else:
                 text += f"{metric_name}: {val:>.8f}"
             if count == len(metrics) - 1:
-                text += "]\n"
+                text += "\n]\n"
             else:
-                text += ", "
+                text += ",\n"
     return text
 
 
