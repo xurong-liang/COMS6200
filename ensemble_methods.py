@@ -6,7 +6,8 @@ from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from collections import Counter
 from timeit import default_timer as timer
 from dataloader import get_data_frame, get_train_test_indices_for_all_folds
-from evaluate import compute_metric_values, generate_class_performance_text, save_result_text
+from evaluate import compute_metric_values, generate_class_performance_text,\
+    save_result_text, plot_2_pc_results
 import numpy as np
 import copy
 from multiprocessing import Process
@@ -45,8 +46,26 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
     data_frame = origin_data_frame.drop(columns=["text_label", "ordinal_label"])
     class_one_hot_pos, class_one_hot_encoding = text_label_mapping[imbalanced_class]
 
-    original_train_label_distributions = []
+    # record all dataset for PCA computation
+    all_datasets_x = {k: None for k in class_imbalanced_methods + ["origin"]}
+    all_datasets_y = {k: None for k in class_imbalanced_methods + ["origin"]}
+    indices_loader = get_train_test_indices_for_all_folds(origin_data_frame)
+    for train_idxes, _ in indices_loader:
+        train_features, train_labels = data_frame.iloc[train_idxes], one_hot_labels[train_idxes, :]
+        batch_train_labels = train_labels[:, class_one_hot_pos]
+        assert not np.all(batch_train_labels == 0)
+        if all_datasets_x["origin"] is None:
+            all_datasets_x['origin'] = np.array(train_features)
+            all_datasets_y["origin"] = batch_train_labels
+        else:
+            all_datasets_x["origin"] = np.concatenate((all_datasets_x["origin"],
+                                                      np.array(train_features)), axis=0)
+            all_datasets_y["origin"] = np.concatenate((all_datasets_y["origin"],
+                                                      batch_train_labels), axis=0)
+
+    original_train_label_distributions = None
     for method in class_imbalanced_methods:
+        original_train_label_distributions = []
         print(f'Running {method}...')
         indices_loader = get_train_test_indices_for_all_folds(origin_data_frame)
         for train_idxes, test_idxes in indices_loader:
@@ -59,11 +78,20 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
             original_train_label_distributions.append(dict(Counter(batch_train_labels)))
             imbalanced_start = timer()
             X, y = getattr(class_imbalanced_methods_mapping[method], method) \
-                (sampling_strategy=sampling_strategy, random_state=seed).\
+                (sampling_strategy=sampling_strategy, random_state=seed). \
                 fit_resample(X=train_features, y=batch_train_labels)
             assert not np.all(y == 0)
 
-            class_metrics[method]["new_train_label_distributions"] = dict(Counter(y))
+            if all_datasets_x[method] is None:
+                all_datasets_x[method] = np.array(X)
+                all_datasets_y[method] = y
+            else:
+                all_datasets_x[method] = np.concatenate((all_datasets_x[method],
+                                                        np.array(X)), axis=0)
+                all_datasets_y[method] = np.concatenate((all_datasets_y[method],
+                                                        y), axis=0)
+
+            class_metrics[method]["new_train_label_distributions"].append(dict(Counter(y)))
             imbalanced_end = timer()
             model = RandomForestClassifier(random_state=seed)
 
@@ -99,9 +127,14 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
 
     hyper_text = f"classifier_default_methods_" + "_".join(class_imbalanced_methods)
     hyper_text += f"_sampling_strategy_{sampling_strategy}"
-    save_result_text(classifier=base_classifier + f"_{imbalanced_class}", hyper=hyper_text, data_method=dataset,
+    save_result_text(classifier=base_classifier + f"_{imbalanced_class}",
+                     hyper=hyper_text, data_method=dataset,
                      class_performance_text=performance_text,
                      imbalanced_problem=True)
+    folder_name = base_classifier + f"_{imbalanced_class}_" + hyper_text + "_" + dataset
+    # compute pca
+    plot_2_pc_results(dataset_x=all_datasets_x, dataset_y=all_datasets_y,
+                      res_dir=f"./res/address_imbalanced_res/{folder_name}")
 
 
 def get_arguments() -> dict:
@@ -110,20 +143,22 @@ def get_arguments() -> dict:
     :return: set of argument values in a ditionary
     """
     parser = ArgumentParser()
-    parser.add_argument("--task", type=str, required=True,
+    parser.add_argument("--task", type=str,
                         help="What is the task to be conducted."
                              " Options: ['full', 'imbalance_problem']"
                         )
-    parser.add_argument("--classifier", type=str, nargs="+", required=True,
+    parser.add_argument("--classifier", type=str, nargs="+",
                         help="What classifier to be used. "
-                             "Options: ['both', 'adaboost', 'random_forest']"
+                             "Options: ['adaboost', 'random_forest']"
                         )
-    parser.add_argument("--dataset", type=str, nargs="+", required=True,
+    parser.add_argument("--dataset", type=str, nargs="+",
                         help="The type of dataset to be evaluated. "
                              "default: ['unnormalized', 'zscore', 'minmax']"
                         )
     parser.add_argument("--imbalanced_class", type=str,
                         help="The name of the imbalanced class to be evaluated.")
+    parser.add_argument("--sampling_strategy", type=float, nargs="+",
+                        help="The list of sampling strategies for SMOTE to compute.")
 
     task_range = ['full', 'imbalance_problem']
     classifier_range = ['both', 'adaboost', 'random_forest']
@@ -132,7 +167,8 @@ def get_arguments() -> dict:
         task="full",
         classifier="both",
         dataset=dataset_range,
-        imbalanced_class="U2R"
+        imbalanced_class="U2R",
+        sampling_strategy=[.1 * k for k in range(1, 6)]
     )
     args = vars(parser.parse_args())
     # capitalize first letter of each word
@@ -329,8 +365,11 @@ if __name__ == "__main__":
         # address U2R's imbalanced dataset problem
         for _d in arguments["dataset"]:
             for _c in arguments["classifier"]:
-                print(f"solve imbalance problem on {_d} dataset, {_c} classifier...")
-                solve_imbalance_problem(dataset=_d, base_classifier=_c,
-                                        imbalanced_class=arguments["imbalanced_class"])
+                for strategy in arguments["sampling_strategy"]:
+                    print(f"solve imbalance problem on {_d} dataset, {_c} classifier, "
+                          f"sampling strategy {strategy}...")
+                    solve_imbalance_problem(dataset=_d, base_classifier=_c,
+                                            imbalanced_class=arguments["imbalanced_class"],
+                                            sampling_strategy=strategy)
     total_end = timer()
     print(f'All processes finished, total elapsed time {timedelta(seconds=total_end - total_start)}.')

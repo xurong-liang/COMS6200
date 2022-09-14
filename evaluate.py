@@ -3,7 +3,11 @@ This file has methods related to model evaluation
 """
 
 import os
+
+import numpy as np
 import sklearn.metrics
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 
 
 def compute_metric_values(y_true, y_preds):
@@ -105,6 +109,45 @@ def generate_class_performance_text(res_dict: dict, imbalanced_problem: bool = F
             else:
                 text += ",\n"
     return text
+
+
+def plot_2_pc_results(dataset_x: dict, dataset_y: dict, res_dir: str = "./res/address_imbalanced_res"):
+    """
+    For each entry in the dataset dict, perform PCA with 2 principal components, and then save
+    as image
+
+    :param dataset_y: the dict that contains all y of original and balanced dataset, in form
+                {
+                       dataset balancing technique/origin: y from all batches combined
+                                }
+    :param dataset_x: the dict that contains all X of original and balanced dataset, in form
+                {
+                       dataset balancing technique/origin: X from all batches combined
+                                }
+    :param res_dir: the directory where the plot is saved
+    """
+    if not os.path.exists(res_dir):
+        os.mkdir(res_dir)
+
+    for name, x in dataset_x.items():
+        y = dataset_y[name]
+        plt.figure()
+        plt.title(f'{name} 2 PC')
+        plt.xlabel("PC 1")
+        plt.ylabel("PC 2")
+        new_x = PCA(n_components=2).fit_transform(x)
+        for label in [1., 0.]:
+            row_idx = np.where(y == label)[0]
+            if name == "origin" and label == 1.:
+                plt.scatter(new_x[row_idx, 0], new_x[row_idx, 1],
+                            label=str(label), s=50, marker="X")
+            else:
+                plt.scatter(new_x[row_idx, 0], new_x[row_idx, 1], label=str(label))
+        plt.legend()
+        # in order to view image
+        plt.savefig(os.path.join(res_dir, f"{name}.png"))
+        # for usage in latex
+        plt.savefig(os.path.join(res_dir, f"{name}.pgf"))
 
 
 if __name__ == "__main__":
