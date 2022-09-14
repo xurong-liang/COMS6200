@@ -141,9 +141,10 @@ def get_arguments() -> dict:
     if args["task"] not in task_range:
         print(f"task must be in {task_range}", file=sys.stderr)
         exit(1)
-    if args['classifier'] not in classifier_range:
-        print(f"classifier must be in {classifier_range}", file=sys.stderr)
-        exit(1)
+    for classifier in args['classifier']:
+        if classifier not in classifier_range:
+            print(f"classifier must be in {classifier_range}", file=sys.stderr)
+            exit(1)
     for dataset in args["dataset"]:
         if dataset not in dataset_range:
             print(f"{dataset} is not a valid dataset", file=sys.stderr)
