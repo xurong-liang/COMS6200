@@ -40,14 +40,15 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
     # that yields performance of 47% on U2R
     class_metrics = init_class_metrics({k: None for k in class_imbalanced_methods},
                                        imbalanced_problem=True)
+    origin_data_frame, one_hot_labels, text_label_mapping, _, _ = get_data_frame(data_method=dataset)
 
-    data_frame, one_hot_labels, text_label_mapping, _, _ = get_data_frame(data_method=dataset)
-    indices_loader = get_train_test_indices_for_all_folds(data_frame)
-    data_frame = data_frame.drop(columns=["text_label", "ordinal_label"])
+    data_frame = origin_data_frame.drop(columns=["text_label", "ordinal_label"])
     class_one_hot_pos, class_one_hot_encoding = text_label_mapping[imbalanced_class]
 
     original_train_label_distributions = []
     for method in class_imbalanced_methods:
+        print(f'Running {method}...')
+        indices_loader = get_train_test_indices_for_all_folds(origin_data_frame)
         for train_idxes, test_idxes in indices_loader:
             train_features, train_labels = data_frame.iloc[train_idxes], one_hot_labels[train_idxes, :]
             test_features, ground_truth = data_frame.iloc[test_idxes], one_hot_labels[test_idxes, :]
@@ -67,8 +68,8 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
             model = RandomForestClassifier(random_state=seed)
 
             # train model
-            elapsed_time, model = train_a_batch(features=train_features,
-                                                labels=batch_train_labels,
+            elapsed_time, model = train_a_batch(features=X,
+                                                labels=y,
                                                 model=model)
 
             # training elapsed time now include time taken on imbalanced dataset fixing
@@ -113,7 +114,7 @@ def get_arguments() -> dict:
                         help="What is the task to be conducted."
                              " Options: ['full', 'imbalance_problem']"
                         )
-    parser.add_argument("--classifier", type=str, required=True,
+    parser.add_argument("--classifier", type=str, nargs="+", required=True,
                         help="What classifier to be used. "
                              "Options: ['both', 'adaboost', 'random_forest']"
                         )
@@ -327,6 +328,7 @@ if __name__ == "__main__":
         # address U2R's imbalanced dataset problem
         for _d in arguments["dataset"]:
             for _c in arguments["classifier"]:
+                print(f"solve imbalance problem on {_d} dataset, {_c} classifier...")
                 solve_imbalance_problem(dataset=_d, base_classifier=_c,
                                         imbalanced_class=arguments["imbalanced_class"])
     total_end = timer()
