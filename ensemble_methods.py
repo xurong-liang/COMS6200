@@ -29,10 +29,16 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
         of instances in the majority class
     """
     class_imbalanced_methods = ["SMOTE", "SMOTETomek", "SMOTEENN"]
+    class_imbalanced_methods = ["AllKNN", "CondensedNearestNeighbour", "TomekLinks"]
     class_imbalanced_methods_mapping = {
+        # over-sampling strategies
         "SMOTE": imblearn.over_sampling,
         "SMOTETomek": imblearn.combine,
-        "SMOTEENN": imblearn.combine
+        "SMOTEENN": imblearn.combine,
+        # under-sampling strategies
+        "AllKNN": imblearn.under_sampling,
+        "CondensedNearestNeighbour": imblearn.under_sampling,
+        "TomekLinks": imblearn.under_sampling
     }
 
     if base_classifier == "adaboost":
@@ -77,9 +83,15 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
 
             original_train_label_distributions.append(dict(Counter(batch_train_labels)))
             imbalanced_start = timer()
-            X, y = getattr(class_imbalanced_methods_mapping[method], method) \
-                (sampling_strategy=sampling_strategy, random_state=seed). \
-                fit_resample(X=train_features, y=batch_train_labels)
+            if method.startswith('S'):
+                # oversampling
+                X, y = getattr(class_imbalanced_methods_mapping[method], method) \
+                    (sampling_strategy=sampling_strategy, random_state=seed). \
+                    fit_resample(X=train_features, y=batch_train_labels)
+            else:
+                # under-sampling
+                X, y = getattr(class_imbalanced_methods_mapping[method], method)(random_state=seed). \
+                    fit_resample(X=train_features, y=batch_train_labels)
             assert not np.all(y == 0)
 
             if all_datasets_x[method] is None:
