@@ -152,9 +152,9 @@ def plot_2_pc_results(dataset_x: dict, dataset_y: dict, res_dir: str = "./res/ad
                 plt.scatter(new_x[row_idx, 0], new_x[row_idx, 1], label=str(label))
         plt.legend()
         # in order to view image
-        plt.savefig(os.path.join(res_dir, f"{name}.png"))
+        plt.savefig(os.path.join(res_dir, f"{name}.png"), format="png")
         # for usage in latex
-        plt.savefig(os.path.join(res_dir, f"{name}.pgf"))
+        plt.savefig(os.path.join(res_dir, f"{name}.pgf"), format="pgf")
 
 
 if __name__ == "__main__":
