@@ -8,6 +8,13 @@ import numpy as np
 import sklearn.metrics
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.rcParams.update({
+    "pgf.texsystem": "pdflatex",
+    'font.family': 'serif',
+    'text.usetex': True,
+    'pgf.rcfonts': False,
+})
 
 
 def compute_metric_values(y_true, y_preds):
