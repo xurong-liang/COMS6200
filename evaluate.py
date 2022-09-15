@@ -8,13 +8,6 @@ import numpy as np
 import sklearn.metrics
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.rcParams.update({
-    "pgf.texsystem": "pdflatex",
-    'font.family': 'serif',
-    'text.usetex': True,
-    'pgf.rcfonts': False,
-})
 
 
 def compute_metric_values(y_true, y_preds):
@@ -153,8 +146,6 @@ def plot_2_pc_results(dataset_x: dict, dataset_y: dict, res_dir: str = "./res/ad
         plt.legend()
         # in order to view image
         plt.savefig(os.path.join(res_dir, f"{name}.png"), format="png")
-        # for usage in latex
-        plt.savefig(os.path.join(res_dir, f"{name}.pgf"), format="pgf")
 
 
 if __name__ == "__main__":
