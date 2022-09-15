@@ -15,6 +15,30 @@ from datetime import timedelta
 from argparse import ArgumentParser
 import sys
 import imblearn
+import os
+import re
+
+
+def check_has_undersampling(classifier_name: str, imbalanced_class: str,
+                            dataset: str,
+                            res_dir: str = "./res/address_imbalanced_res") -> bool:
+    """
+    Check whether we have called undersampling for current (classifier, imbalanced calss)
+    combination.
+    Since for over-sampling we have multiple sampling strategies so solve_imbalance_problem()
+    function will be called multiple times, but we do not have sampling strategies
+    for under-sampling, meaning we only need to call once
+
+    :param res_dir:
+    :return:
+    """
+    if os.path.exists(res_dir):
+        expr = f'{classifier_name}_{imbalanced_class}_(\w+)_AllKNN_(\w+)_'
+        _, _, _files = next(os.walk(res_dir), (None, None, []))
+        for _file in _files:
+            if _file.endswith(f"{dataset}.txt") and re.match(expr, _file):
+                return True
+    return False
 
 
 def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class: str,
@@ -28,8 +52,15 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
     :param sampling_strategy: the percentage of minor class instances wrt to number
         of instances in the majority class
     """
-    class_imbalanced_methods = ["SMOTE", "SMOTETomek", "SMOTEENN"]
-    class_imbalanced_methods = ["AllKNN", "CondensedNearestNeighbour", "TomekLinks"]
+    class_imbalanced_methods = ["SMOTE", "SMOTETomek", "SMOTEENN", ]
+    under_samplings = ["AllKNN", "CondensedNearestNeighbour", "TomekLinks"]
+    # check whether we need to run under-sampling strategies again
+    has_undersampling = check_has_undersampling(classifier_name=base_classifier,
+                                                imbalanced_class=imbalanced_class,
+                                                dataset=dataset)
+    if not has_undersampling:
+        class_imbalanced_methods.extend(under_samplings)
+
     class_imbalanced_methods_mapping = {
         # over-sampling strategies
         "SMOTE": imblearn.over_sampling,
@@ -136,9 +167,10 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
     performance_text = f"original train distribution: {original_train_label_distributions}\n\n"
     performance_text += generate_class_performance_text(res_dict=class_metrics,
                                                         imbalanced_problem=True)
-
     hyper_text = f"classifier_default_methods_" + "_".join(class_imbalanced_methods)
-    hyper_text += f"_sampling_strategy_{sampling_strategy}"
+    if set(class_imbalanced_methods) != set(under_samplings):
+        # not purely under-samplings, add sampling strategy as hyper setting
+        hyper_text += f"_sampling_strategy_{sampling_strategy}"
     save_result_text(classifier=base_classifier + f"_{imbalanced_class}",
                      hyper=hyper_text, data_method=dataset,
                      class_performance_text=performance_text,
