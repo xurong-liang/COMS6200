@@ -90,7 +90,7 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
                     fit_resample(X=train_features, y=batch_train_labels)
             else:
                 # under-sampling
-                X, y = getattr(class_imbalanced_methods_mapping[method], method)(random_state=seed). \
+                X, y = getattr(class_imbalanced_methods_mapping[method], method)(). \
                     fit_resample(X=train_features, y=batch_train_labels)
             assert not np.all(y == 0)
 
