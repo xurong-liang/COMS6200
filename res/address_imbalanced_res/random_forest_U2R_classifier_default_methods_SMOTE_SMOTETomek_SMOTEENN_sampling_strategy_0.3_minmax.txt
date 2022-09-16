@@ -1,0 +1,33 @@
+Classifier: random_forest_U2R
+Data Method: minmax
+Hyper: classifier_default_methods_SMOTE_SMOTETomek_SMOTEENN_sampling_strategy_0.30000000000000004
+original train distribution: [{0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 12}]
+
+method: SMOTE, [
+accuracy: 0.99998255,
+precision: 0.93333333,
+recall: 0.71111111,
+f1: 0.80538721,
+training time: 102.01423471s,
+new train distribution: [{0.0: 229248, 1.0: 68774} {0.0: 229248, 1.0: 68774}
+ {0.0: 229248, 1.0: 68774}]
+]
+method: SMOTETomek, [
+accuracy: 0.99998255,
+precision: 0.93333333,
+recall: 0.71111111,
+f1: 0.80538721,
+training time: 361.88260187s,
+new train distribution: [{0.0: 229248, 1.0: 68774} {0.0: 229248, 1.0: 68774}
+ {0.0: 229248, 1.0: 68774}]
+]
+method: SMOTEENN, [
+accuracy: 0.99998255,
+precision: 0.93333333,
+recall: 0.71111111,
+f1: 0.80538721,
+training time: 351.89358736s,
+new train distribution: [{0.0: 229247, 1.0: 68774} {0.0: 229247, 1.0: 68774}
+ {0.0: 229246, 1.0: 68774}]
+]
+

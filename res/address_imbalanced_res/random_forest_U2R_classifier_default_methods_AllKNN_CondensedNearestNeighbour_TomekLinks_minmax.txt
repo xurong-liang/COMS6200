@@ -1,0 +1,30 @@
+Classifier: random_forest_U2R
+Data Method: minmax
+Hyper: classifier_default_methods_AllKNN_CondensedNearestNeighbour_TomekLinks_sampling_strategy_0.0
+original train distribution: [{0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 12}]
+
+method: AllKNN, [
+accuracy: 0.99997092,
+precision: 1.00000000,
+recall: 0.42222222,
+f1: 0.56746032,
+training time: 390.66490723s,
+new train distribution: [{0.0: 229248, 1.0: 11} {0.0: 229247, 1.0: 11} {0.0: 229247, 1.0: 12}]
+]
+method: CondensedNearestNeighbour, [
+accuracy: 0.98039196,
+precision: 0.00362878,
+recall: 0.76666667,
+f1: 0.00721290,
+training time: 360.86524005s,
+new train distribution: [{0.0: 28, 1.0: 11} {0.0: 26, 1.0: 11} {0.0: 27, 1.0: 12}]
+]
+method: TomekLinks, [
+accuracy: 0.99996801,
+precision: 0.66666667,
+recall: 0.36666667,
+f1: 0.47222222,
+training time: 137.59732073s,
+new train distribution: [{0.0: 229248, 1.0: 11} {0.0: 229248, 1.0: 11} {0.0: 229248, 1.0: 12}]
+]
+
