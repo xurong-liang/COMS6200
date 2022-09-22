@@ -1,0 +1,33 @@
+Classifier: svm-poly_U2R
+Data Method: minmax
+Hyper: classifier_default_methods_SMOTE_SMOTETomek_SMOTEENN_sampling_strategy_0.30000000000000004
+original train distribution: [{0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 12}]
+
+method: SMOTE, [
+accuracy: 0.99946785,
+precision: 0.10747051,
+recall: 0.71111111,
+f1: 0.17315027,
+training time: 1013.84701695s,
+new train distribution: [{0.0: 229248, 1.0: 68774} {0.0: 229248, 1.0: 68774}
+ {0.0: 229248, 1.0: 68774}]
+]
+method: SMOTETomek, [
+accuracy: 0.99946785,
+precision: 0.10747051,
+recall: 0.71111111,
+f1: 0.17315027,
+training time: 2324.86220001s,
+new train distribution: [{0.0: 229248, 1.0: 68774} {0.0: 229248, 1.0: 68774}
+ {0.0: 229248, 1.0: 68774}]
+]
+method: SMOTEENN, [
+accuracy: 0.99947076,
+precision: 0.11182781,
+recall: 0.71111111,
+f1: 0.17798118,
+training time: 5770.86351759s,
+new train distribution: [{0.0: 229247, 1.0: 68774} {0.0: 229247, 1.0: 68774}
+ {0.0: 229246, 1.0: 68774}]
+]
+

@@ -1,0 +1,57 @@
+Classifier: s_U2R
+Data Method: unnormalized
+Hyper: classifier_default_methods_SMOTE_SMOTETomek_SMOTEENN_AllKNN_CondensedNearestNeighbour_TomekLinks_sampling_strategy_0.1
+original train distribution: [{0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 12}]
+
+method: SMOTE, [
+accuracy: 0.99995057,
+precision: 0.00000000,
+recall: 0.00000000,
+f1: 0.00000000,
+training time: 5485.63002695s,
+new train distribution: [{0.0: 229248, 1.0: 22924} {0.0: 229248, 1.0: 22924}
+ {0.0: 229248, 1.0: 22924}]
+]
+method: SMOTETomek, [
+accuracy: 0.99995057,
+precision: 0.00000000,
+recall: 0.00000000,
+f1: 0.00000000,
+training time: 6433.68176389s,
+new train distribution: [{0.0: 229248, 1.0: 22924} {0.0: 229248, 1.0: 22924}
+ {0.0: 229248, 1.0: 22924}]
+]
+method: SMOTEENN, [
+accuracy: 0.99995057,
+precision: 0.00000000,
+recall: 0.00000000,
+f1: 0.00000000,
+training time: 7096.48007840s,
+new train distribution: [{0.0: 229232, 1.0: 22895} {0.0: 229236, 1.0: 22924}
+ {0.0: 229245, 1.0: 22922}]
+]
+method: AllKNN, [
+accuracy: 0.99995057,
+precision: 0.00000000,
+recall: 0.00000000,
+f1: 0.00000000,
+training time: 2691.76651711s,
+new train distribution: [{0.0: 229246, 1.0: 11} {0.0: 229246, 1.0: 11} {0.0: 229245, 1.0: 12}]
+]
+method: CondensedNearestNeighbour, [
+accuracy: 0.99995057,
+precision: 0.00000000,
+recall: 0.00000000,
+f1: 0.00000000,
+training time: 1077.48569152s,
+new train distribution: [{0.0: 38, 1.0: 11} {0.0: 33, 1.0: 11} {0.0: 29, 1.0: 12}]
+]
+method: TomekLinks, [
+accuracy: 0.99995057,
+precision: 0.00000000,
+recall: 0.00000000,
+f1: 0.00000000,
+training time: 898.41156918s,
+new train distribution: [{0.0: 229247, 1.0: 11} {0.0: 229248, 1.0: 11} {0.0: 229247, 1.0: 12}]
+]
+
