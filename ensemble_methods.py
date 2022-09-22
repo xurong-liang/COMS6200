@@ -193,7 +193,7 @@ def get_arguments() -> dict:
                         )
     parser.add_argument("--classifier", type=str, nargs="+",
                         help="What classifier to be used. "
-                             "Options: ['adaboost', 'random_forest']"
+                             "Options: ['adaboost', 'random_forest', 'both']"
                         )
     parser.add_argument("--dataset", type=str, nargs="+",
                         help="The type of dataset to be evaluated. "
@@ -209,7 +209,7 @@ def get_arguments() -> dict:
     dataset_range = ['unnormalized', 'zscore', 'minmax']
     parser.set_defaults(
         task="full",
-        classifier="both",
+        classifier=classifier_range,
         dataset=dataset_range,
         imbalanced_class="U2R",
         sampling_strategy=[.1 * k for k in range(1, 6)]
@@ -225,6 +225,9 @@ def get_arguments() -> dict:
         if classifier not in classifier_range:
             print(f"classifier must be in {classifier_range}", file=sys.stderr)
             exit(1)
+        if classifier == "both":
+            args["classifier"] = classifier_range
+            break
     for dataset in args["dataset"]:
         if dataset not in dataset_range:
             print(f"{dataset} is not a valid dataset", file=sys.stderr)
