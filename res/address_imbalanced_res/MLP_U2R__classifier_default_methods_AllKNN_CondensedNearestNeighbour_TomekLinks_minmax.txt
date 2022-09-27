@@ -1,0 +1,27 @@
+Classifier: MLP_U2R_
+Data Method: minmax
+Hyper: classifier_default_methods_AllKNN_CondensedNearestNeighbour_TomekLinks
+original train distribution: [{0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 12}]
+
+method: AllKNN, [
+accuracy: 0.99995057,
+precision: 0.00000000,
+recall: 0.00000000,
+f1: 0.00000000,
+new train distribution: [{0.0: 229248, 1.0: 11}, {0.0: 229247, 1.0: 11}, {0.0: 229247, 1.0: 12}]
+]
+method: CondensedNearestNeighbour, [
+accuracy: 0.99995057,
+precision: 0.00000000,
+recall: 0.00000000,
+f1: 0.00000000,
+new train distribution: [{0.0: 28, 1.0: 11}, {0.0: 27, 1.0: 11}, {0.0: 28, 1.0: 12}]
+]
+method: TomekLinks, [
+accuracy: 0.99995057,
+precision: 0.00000000,
+recall: 0.00000000,
+f1: 0.00000000,
+new train distribution: [{0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 12}]
+]
+

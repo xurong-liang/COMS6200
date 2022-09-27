@@ -1,0 +1,27 @@
+Classifier: MLP_U2R_
+Data Method: minmax
+Hyper: classifier_default_methods_SMOTE_SMOTETomek_SMOTEENN_sampling_strategy_0.2
+original train distribution: [{0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 12}]
+
+method: SMOTE, [
+accuracy: 0.34728547,
+precision: 0.00008806,
+recall: 1.00000000,
+f1: 0.00017611,
+new train distribution: [{0.0: 229248, 1.0: 45849}, {0.0: 229248, 1.0: 45849}, {0.0: 229248, 1.0: 45849}]
+]
+method: SMOTETomek, [
+accuracy: 0.55583408,
+precision: 0.00014725,
+recall: 0.93333333,
+f1: 0.00029444,
+new train distribution: [{0.0: 229248, 1.0: 45849}, {0.0: 229248, 1.0: 45849}, {0.0: 229248, 1.0: 45849}]
+]
+method: SMOTEENN, [
+accuracy: 0.54471684,
+precision: 0.00010682,
+recall: 0.93333333,
+f1: 0.00021361,
+new train distribution: [{0.0: 229247, 1.0: 45849}, {0.0: 229247, 1.0: 45849}, {0.0: 229246, 1.0: 45849}]
+]
+
