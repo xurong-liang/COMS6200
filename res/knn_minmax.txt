@@ -1,0 +1,12 @@
+Classifier: knn
+Data Method: minmax
+Hyper: default
+class: BOTNET, [accuracy: 0.99999418, precision: 0.98798701, recall: 1.00000000, f1: 0.99393889, training time: 0.14078380s]
+class: Web-Attack, [accuracy: 0.99993893, precision: 0.97497130, recall: 0.91666667, f1: 0.94044559, training time: 0.15738300s]
+class: Probe, [accuracy: 0.99966559, precision: 0.99930735, recall: 0.99952104, f1: 0.99941413, training time: 0.16104040s]
+class: DoS, [accuracy: 0.99971212, precision: 0.99908611, recall: 0.99906744, f1: 0.99907675, training time: 0.19708700s]
+class: DDoS, [accuracy: 0.99997383, precision: 1.00000000, recall: 0.99992619, f1: 0.99996310, training time: 0.17260550s]
+class: BFA, [accuracy: 0.99998255, precision: 0.99786780, recall: 0.99786325, f1: 0.99786477, training time: 0.20476340s]
+class: BFA, [accuracy: 0.99998255, precision: 0.99786780, recall: 0.99786325, f1: 0.99786477, training time: 0.20476340s]
+class: U2R, [accuracy: 0.99996511, precision: 0.88888889, recall: 0.35555556, f1: 0.50529101, training time: 0.25241290s]
+class: Normal, [accuracy: 0.99996511, precision: 0.99999274, recall: 0.99996370, f1: 0.99997822, training time: 0.19954500s]
