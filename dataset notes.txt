@@ -1,2 +1,0 @@
-1. imbalance classes (u2r only 17 samples among over 300k) -> not a good dataset(?)
-2. improve balance between classes

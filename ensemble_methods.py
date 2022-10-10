@@ -17,6 +17,8 @@ import sys
 import imblearn
 import os
 import re
+import pathlib
+import platform
 
 
 def check_has_undersampling(classifier_name: str, imbalanced_class: str,
@@ -29,8 +31,11 @@ def check_has_undersampling(classifier_name: str, imbalanced_class: str,
     function will be called multiple times, but we do not have sampling strategies
     for under-sampling, meaning we only need to call once
 
-    :param res_dir:
-    :return:
+    :param res_dir: the directory where the results are stored
+    :param classifier_name: the name of the classifier
+    :param imbalanced_class: the imbalanced class to be checked
+    :param dataset: the type of the dataset
+    :return: True if undersampling strategy has been applied for current classifier; False otherwise
     """
     if os.path.exists(res_dir):
         expr = f'{classifier_name}_{imbalanced_class}_(\w+)_AllKNN_(\w+)_'
@@ -52,12 +57,14 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
     :param sampling_strategy: the percentage of minor class instances wrt to number
         of instances in the majority class
     """
+    imbalanced_res_path = os.path.join(res_dir, "address_imbalanced_res")
     class_imbalanced_methods = ["SMOTE", "SMOTETomek", "SMOTEENN", ]
     under_samplings = ["AllKNN", "CondensedNearestNeighbour", "TomekLinks"]
     # check whether we need to run under-sampling strategies again
     has_undersampling = check_has_undersampling(classifier_name=base_classifier,
                                                 imbalanced_class=imbalanced_class,
-                                                dataset=dataset)
+                                                dataset=dataset,
+                                                res_dir=imbalanced_res_path)
     if not has_undersampling:
         class_imbalanced_methods.extend(under_samplings)
 
@@ -174,23 +181,26 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
     save_result_text(classifier=base_classifier + f"_{imbalanced_class}",
                      hyper=hyper_text, data_method=dataset,
                      class_performance_text=performance_text,
-                     imbalanced_problem=True)
+                     res_dir=imbalanced_res_path)
     folder_name = base_classifier + f"_{imbalanced_class}_" + hyper_text + "_" + dataset
     # compute pca
+    plot_path = os.path.join(imbalanced_res_path, folder_name)
     plot_2_pc_results(dataset_x=all_datasets_x, dataset_y=all_datasets_y,
-                      res_dir=f"./res/address_imbalanced_res/{folder_name}")
+                      res_dir=plot_path)
 
 
 def get_arguments() -> dict:
     """
     Initialize and get program input arguments
-    :return: set of argument values in a ditionary
+    :return: set of argument values in a dictionary
     """
     parser = ArgumentParser()
     parser.add_argument("--task", type=str,
                         help="What is the task to be conducted."
                              " Options: ['full', 'imbalance_problem']"
                         )
+    parser.add_argument("--res_dir", type=str,
+                        help="The base directory to where the results will be saved")
     parser.add_argument("--classifier", type=str, nargs="+",
                         help="What classifier to be used. "
                              "Options: ['adaboost', 'random_forest', 'both']"
@@ -212,7 +222,8 @@ def get_arguments() -> dict:
         classifier=classifier_range,
         dataset=dataset_range,
         imbalanced_class="U2R",
-        sampling_strategy=[.1 * k for k in range(1, 6)]
+        sampling_strategy=[.1 * k for k in range(1, 6)],
+        res_dir="./res/"
     )
     args = vars(parser.parse_args())
     # capitalize first letter of each word
@@ -268,7 +279,7 @@ def run_full_program(datasets: list, classifiers: list):
     :param classifiers: the classifiers to be evaluated
     """
     processes = []
-
+    multi_process = platform.system() != "Windows"
     for method in datasets:
         for c_type in classifiers:
             # params = df, one_hot_labels, text_mapping, ordinal_mapping, one_pos_text_mapping
@@ -284,12 +295,16 @@ def run_full_program(datasets: list, classifiers: list):
                 "classifier_type": c_type,
                 "data_method": method
             }
-            p = Process(target=evaluate_a_data_frame, args=(inputs,))
             print(f"Now start {c_type} on {method} dataset")
-            p.start()
-            processes.append(p)
-    for p in processes:
-        p.join()
+            if multi_process:
+                p = Process(target=evaluate_a_data_frame, args=(inputs,))
+                p.start()
+                processes.append(p)
+            else:
+                evaluate_a_data_frame(inputs)
+    if multi_process:
+        for p in processes:
+            p.join()
 
 
 def evaluate_a_data_frame(info: dict):
@@ -339,7 +354,7 @@ def evaluate_a_data_frame(info: dict):
 
     performance_text = generate_class_performance_text(res_dict=class_metrics)
     save_result_text(classifier=classifier_type, hyper="default", data_method=data_method,
-                     class_performance_text=performance_text)
+                     class_performance_text=performance_text, res_dir=res_dir)
     print(f'{classifier_type} results for {data_method} dataset completed.')
 
 
@@ -403,6 +418,11 @@ def test_a_batch(features, ground_truth, model):
 
 if __name__ == "__main__":
     arguments = get_arguments()
+    print(arguments)
+    res_dir = arguments["res_dir"]
+    if not os.path.exists(res_dir):
+        pathlib.Path(res_dir).mkdir(parents=True, exist_ok=True)
+
     seed = 2022
     total_start = timer()
     if arguments["task"] == "full":

@@ -31,8 +31,7 @@ def compute_metric_values(y_true, y_preds):
 
 
 def save_result_text(classifier: str, hyper: str, data_method: str,
-                     class_performance_text: str, res_dir: str = "./res/",
-                     imbalanced_problem: bool = False):
+                     class_performance_text: str, res_dir: str = "./res/"):
     """
     Output the evaluation result to stdout and res_dir.
     The output file will have the name of {classifier}_{hyper}.txt
@@ -43,15 +42,7 @@ def save_result_text(classifier: str, hyper: str, data_method: str,
      write method to address it as well: e.g. linear_undersampling
     :param data_method: [unnormalized, minmax, zscore]
     :param res_dir: the directory where the result is saved
-    :param imbalanced_problem: if the result is computed to address the problem of
-        imbalanced dataset, if yes, then save to res_dir/address_imbalanced_res/
     """
-    if imbalanced_problem:
-        res_dir = os.path.join(res_dir, "address_imbalanced_res")
-
-    if not os.path.exists(res_dir):
-        os.mkdir(res_dir)
-
     text = ""
     for name in ['classifier', 'data_method', 'hyper']:
         metric = locals()[name]
