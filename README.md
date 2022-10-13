@@ -38,4 +38,4 @@ python3 ./ensemble_mathods.py -h
 ```
 
 ***
-<p align="center">Made with ❤️by <em>Team F</em></p>
+<p align="center">Made with ❤ by <em>Team F</em></p>
