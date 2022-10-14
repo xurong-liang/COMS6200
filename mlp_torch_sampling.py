@@ -14,6 +14,8 @@ from evaluate import *
 import time
 import imblearn
 from collections import Counter
+from argparse import ArgumentParser
+import sys
 
 
 def reset_weights(m):
@@ -54,8 +56,8 @@ class MyDataset(Dataset):
     """
     Dataset class, to be used with DataLoader
 
-    :param ordinal_label: Numerical label (between 0 and 7 in InSDN dataset)
-    :param data_method: the dataset to be imported, options: [minmax, unnormalized, zscore] 
+    :param X: Datapoints
+    :param y: labels
     """
     def __init__(self, X, y):
         self.X = X
@@ -77,16 +79,17 @@ class Runner():
     :param batch_size: Number of datapoints in a batch
     :param ordinal_label: Numerical label (between 0 and 7 in InSDN dataset)
     :param data_method: the dataset to be imported, options: [minmax, unnormalized, zscore] 
+    :param imd_class: Class of under/oversampling method. Default: SMOTE (oversampling)
+    :param imb_text: String representing the sampling method. Default: "SMOTE"
     """
     def __init__(self, epoch=10, 
                 batch_size=128, 
                 ordinal_label=0, 
                 data_method="minmax", 
-                imb_class=imblearn.over_sampling.SMOTE, 
-                sampling_strategy=.2,
+                imb_class=imblearn.over_sampling.SMOTE(sampling_strategy=0.1, 
+                                    random_state=2022), 
                 imb_text="SMOTE"):
 
-        self.sampling_strategy = sampling_strategy
         self.imb_class = imb_class
         self.epoch = epoch
         self.batch_size = batch_size
@@ -181,6 +184,7 @@ class Runner():
         :param results_folds: a list containing results of all folds
         :param start: start time of k-fold training
         :param end: end time of k-fold training
+        
         :return a dict with average metrics (acc, precision, recall, f1) of all k-folds 
         """
         dict_metrics = {}
@@ -226,8 +230,9 @@ class Runner():
         :param fold: number of fold
         :param test_loader: pytorch test data loader
         :param model: pytorch ML model
-        :param optimizer: pytorch optimizer function
         :param loss_fn: pytorch loss function
+
+        :return metric dictionary (acc rec prec f1)
         """
         model.eval()
         loss = 0
@@ -255,36 +260,83 @@ class Runner():
                                              pred.detach().numpy())
         return metrics_dict
 
-        
+def get_arguments() -> dict:
+    """
+    Initialize and get program input arguments
+    :return: set of argument values in a dictionary
+    """
+    parser = ArgumentParser()
+    parser.add_argument("--norm", type=str, nargs="+",
+                        help="The type of normalization to be evaluated. "
+                             "default: ['minmax']"
+                        )
+
+    parser.add_argument("--epoch", type=int,
+                        help="Number of epoch in MLP training. "
+                             "default: 5"
+                        )
+
+    parser.add_argument("--imbalanced_class", type=str,
+                        help="The name of the imbalanced class to be evaluated."
+                             "Default: U2R")
+
+    parser.add_argument("--sampling_strategy", type=float, nargs="+",
+                        help="The list of sampling strategies for SMOTE to compute."
+                             "Default: 0.1, 0.2, 0.3, 0.4, 0.5")
+
+    norms = ['minmax']
+    parser.set_defaults(
+        norm=norms,
+        imbalanced_class="U2R",
+        sampling_strategy=[.1 * k for k in range(1, 6)],
+        epoch=5,
+    )
+    args = vars(parser.parse_args())
+    # capitalize first letter of each word
+    args["imbalanced_class"] = args["imbalanced_class"].title()
+
+    
+    if type(args["epoch"]) != int:
+        print("Epoch must be an integer", file=sys.stderr)
+        exit(1)
+
+    for norm in args["norm"]:
+        if norm not in norms:
+            print(f"{norm} is not a valid normalization method", file=sys.stderr)
+            exit(1)
+    return args  
+
+
 def main():
     """
     Main function of MLP training model in InSDN project
     """
+    class_dict = {
+                'BOTNET': 7,
+                'Web-Attack': 6,
+                'Probe': 5,
+                'DoS': 4,
+                'DDoS': 3,
+                'BFA': 2,
+                'U2R': 1,
+                'Normal': 0,
+    }
+    
+    args = get_arguments()
+    print(args)
 
-    """
-    {'BOTNET': (7, array([0., 0., 0., 0., 0., 0., 0., 1.])),
-    'Web-Attack': (6, array([0., 0., 0., 0., 0., 0., 1., 0.])),
-    'Probe': (5, array([0., 0., 0., 0., 0., 1., 0., 0.])),
-    'DoS': (4, array([0., 0., 0., 0., 1., 0., 0., 0.])),
-    'DDoS': (3, array([0., 0., 0., 1., 0., 0., 0., 0.])),
-    'BFA': (2, array([0., 0., 1., 0., 0., 0., 0., 0.])),
-    'U2R': (1, array([0., 1., 0., 0., 0., 0., 0., 0.])),
-    'Normal': (0, array([1., 0., 0., 0., 0., 0., 0., 0.]))}
-    """
-    start = time.time()
     # Only use minmax for testing sampling methods
-    norm = "minmax"
+    norms = args['norm']
+    epoch = args['epoch']
+    sampling_strategies = args['sampling_strategy']
     # Only use U2R attack class for testing sampling methods
-    label = 1
+    label = class_dict[args['imbalanced_class']]
 
     class_metrics = {}
-    # sampling_strategy = [.1 * k for k in range(1, 6)]
-    # class_imbalanced_methods = ["SMOTE", "SMOTETomek", "SMOTEENN", 
-    #                             "AllKNN", "CondensedNearestNeighbour", "TomekLinks"]
     seed = 2022
-    sampling_strategies = [0.1 * k for k in range(2, 6)]
-    class_imbalanced_methods = ["SMOTE", "SMOTETomek", "SMOTEENN"]
-    # class_imbalanced_methods = ["AllKNN", "CondensedNearestNeighbour", "TomekLinks"]
+    
+    class_oversampling_methods = ["SMOTE", "SMOTETomek", "SMOTEENN"]
+    class_undersampling_methods = ["AllKNN", "CondensedNearestNeighbour", "TomekLinks"]
     class_imbalanced_methods_mapping = {
         # over-sampling strategies
         "SMOTE": imblearn.over_sampling,
@@ -295,45 +347,77 @@ def main():
         "CondensedNearestNeighbour": imblearn.under_sampling,
         "TomekLinks": imblearn.under_sampling
     }
-    for sample in sampling_strategies:
-        print(f"---Testing with sampling strategy \"{sample}\"")
-        for imb_method in class_imbalanced_methods:
+    
+    start = time.time()
+    for norm in norms:
+        print("Undersampling methods\n----------------\n")
+        for imb_method in class_undersampling_methods:
             print(f"---Testing with \"{imb_method}\" imbalance method---")
-            imb_class = None
-            if imb_method[0] == "S":
-                # oversampling
-                imb_class= getattr(class_imbalanced_methods_mapping[imb_method], 
-                                    imb_method) \
-                                    (sampling_strategy=sample, 
-                                    random_state=seed)       
-            else:
-                # under-sampling
-                imb_class= getattr(class_imbalanced_methods_mapping[imb_method], 
-                                    imb_method)()
+            
+            imb_class= getattr(class_imbalanced_methods_mapping[imb_method], 
+                                imb_method)()
             runner = Runner(ordinal_label=label, 
-                            epoch=10, data_method=norm, 
+                            epoch=epoch, data_method=norm, 
                             imb_class=imb_class, 
-                            # sampling_strategy=sample,
                             imb_text=imb_method)
             
             dict_metrics = runner.run()
             class_metrics[imb_method] = dict_metrics
-            hyper_text = "classifier_default_methods_" + "_".join(class_imbalanced_methods)
-            hyper_text += f"_sampling_strategy_{sample}"
+            hyper_text = "classifier_default_methods_" + "_".join(class_undersampling_methods)
             folder_name = "MLP" + "_U2R_" + hyper_text + "_" + norm
             plot_2_pc_results(dataset_x=runner.X_dict, dataset_y=runner.y_dict,
                         res_dir=f"./res/address_imbalanced_res/{folder_name}")
 
         perf_text = f"original train distribution: {runner.orig_dist}\n\n"
         perf_text += generate_class_performance_text(class_metrics, imbalanced_problem=True)
-        hyper_text = "classifier_default_methods_" + "_".join(class_imbalanced_methods)
-        hyper_text += f"_sampling_strategy_{sample}"
+        hyper_text = "classifier_default_methods_" + "_".join(class_undersampling_methods)
 
         save_result_text(classifier="MLP" + "_U2R_", 
                         hyper=hyper_text,
                         data_method=norm,
                         class_performance_text=perf_text,
-                        imbalanced_problem=True)
+                        )
+
+        class_metrics = {}
+        print("Oversampling methods\n----------------\n")
+        for sample in sampling_strategies:
+            print(f"---Testing with sampling strategy \"{sample}\"")
+            for imb_method in class_oversampling_methods:
+                print(f"---Testing with \"{imb_method}\" imbalance method---")
+                imb_class = None
+                if imb_method[0] == "S":
+                    # oversampling
+                    imb_class= getattr(class_imbalanced_methods_mapping[imb_method], 
+                                        imb_method) \
+                                        (sampling_strategy=sample, 
+                                        random_state=seed)       
+                else:
+                    # under-sampling
+                    imb_class= getattr(class_imbalanced_methods_mapping[imb_method], 
+                                        imb_method)()
+                runner = Runner(ordinal_label=label, 
+                                epoch=epoch, data_method=norm, 
+                                imb_class=imb_class, 
+                                imb_text=imb_method)
+                
+                dict_metrics = runner.run()
+                class_metrics[imb_method] = dict_metrics
+                hyper_text = "classifier_default_methods_" + "_".join(class_oversampling_methods)
+                hyper_text += f"_sampling_strategy_{sample}"
+                folder_name = "MLP" + "_U2R_" + hyper_text + "_" + norm
+                plot_2_pc_results(dataset_x=runner.X_dict, dataset_y=runner.y_dict,
+                            res_dir=f"./res/address_imbalanced_res/{folder_name}")
+
+            perf_text = f"original train distribution: {runner.orig_dist}\n\n"
+            perf_text += generate_class_performance_text(class_metrics, imbalanced_problem=True)
+            hyper_text = "classifier_default_methods_" + "_".join(class_oversampling_methods)
+            hyper_text += f"_sampling_strategy_{sample}"
+
+            save_result_text(classifier="MLP" + "_U2R_", 
+                            hyper=hyper_text,
+                            data_method=norm,
+                            class_performance_text=perf_text,
+                            )
 
     
 

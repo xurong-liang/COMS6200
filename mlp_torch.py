@@ -12,6 +12,8 @@ from dataloader import *
 from tqdm import tqdm
 from evaluate import *
 import time
+from argparse import ArgumentParser
+import sys
 
 
 def reset_weights(m):
@@ -35,6 +37,7 @@ class MLP(nn.Module):
         self.input_fc = nn.Linear(input_dim, 80)
         self.hidden_fc = nn.Linear(80, 100)
         self.output_fc = nn.Linear(100, output_dim)
+        
 
     def forward(self, x):
         """
@@ -210,6 +213,7 @@ class Runner():
             loss.backward()
             optimizer.step()
 
+
     def test(self, fold, test_loader, model, loss_fn, test_idx):
         """
         Model testing function
@@ -217,9 +221,10 @@ class Runner():
         :param fold: number of fold
         :param test_loader: pytorch test data loader
         :param model: pytorch ML model
-        :param optimizer: pytorch optimizer function
         :param loss_fn: pytorch loss function
         :param test_idx: test indices list (for getting length of test data)
+
+        :return metric dictionary (acc rec prec f1)
         """
         model.eval()
         loss = 0
@@ -246,7 +251,40 @@ class Runner():
                                              pred.detach().numpy())
         return metrics_dict
 
-        
+def get_arguments() -> dict:
+    """
+    Initialize and get program input arguments
+    :return: set of argument values in a dictionary
+    """
+    parser = ArgumentParser()
+
+    parser.add_argument("--norm", type=str, nargs="+",
+                        help="The type of normalization to be evaluated. "
+                             "default: ['unnormalized', 'zscore', 'minmax']"
+                        )
+
+    parser.add_argument("--epoch", type=int,
+                        help="Number of epoch in MLP training. "
+                             "default: 10"
+                        )
+   
+    norms = ['unnormalized', 'zscore', 'minmax']
+    parser.set_defaults(
+        norm=norms,
+        epoch=10,
+    )
+
+    args = vars(parser.parse_args())
+    if type(args["epoch"]) != int:
+        print("Epoch must be an integer", file=sys.stderr)
+        exit(1)
+
+    for norm in args["norm"]:
+        if norm not in norms:
+            print(f"{norm} is not a valid normalization method", file=sys.stderr)
+            exit(1)
+    return args  
+
 def main():
     """
     Main function of MLP training model in InSDN project
@@ -262,12 +300,17 @@ def main():
     'U2R': (1, array([0., 1., 0., 0., 0., 0., 0., 0.])),
     'Normal': (0, array([1., 0., 0., 0., 0., 0., 0., 0.]))}
     """
+    args = get_arguments()
+    print(args)
+    norms = args['norm']
+    epoch = args['epoch']
+
     start = time.time()
-    for norm in ["minmax", "unnormalized", "zscore"]:
+    for norm in norms:
         print(f"---Testing with \"{norm}\" norm method---")
         class_metrics = {}
         for label in range(8):
-            runner = Runner(ordinal_label=label, epoch=10, data_method=norm)
+            runner = Runner(ordinal_label=label, epoch=epoch, data_method=norm)
             text_label = runner.get_text_label()
             print(f"---Testing with label \"{text_label}\"")
             dict_metrics = runner.run()
