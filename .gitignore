@@ -137,3 +137,6 @@ dataset
 # exclude my own test notebook
 test.ipynb
 
+# vscode launch files
+.vscode
+
