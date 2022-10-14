@@ -37,5 +37,15 @@ For argument help please refer to:
 python3 ./ensemble_mathods.py -h
 ```
 
+## Note
+Conda virtual environment is recommended for MLP models due to dependencies of PyTorch
+Instructions:
+- Install Anaconda/Miniconda from [here](https://conda.io/projects/conda/en/latest/user-guide/install/download.html)
+- Run `conda env create --file COMS6200_env.yml` to 
+create the PyTorch environment of the project.
+- Run `conda activate torch` to activate the environment.
+- Run the MLP files inside the `torch` environment. 
+
+Non-MLP models can be run normally without Conda.
 ***
 <p align="center">Made with ❤ by <em>Team F</em></p>
