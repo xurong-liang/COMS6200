@@ -19,16 +19,29 @@ This repo is for Sem 2, 2022 group project - Machine Learning based Network Intr
 The preprocessed dataset may be found in [here](https://drive.google.com/drive/folders/1cnvofUhz84pMR0SztvfOYzIcpq1sR2VT?usp=sharing)\
 [dataloader.py](./dataloader.py) - script that loads the preprocessed dataframe\
 [evaluate.py](./evaluate.py) - script that contains functions for evaluation\
-[ensemble_methods.py](./ensemble_methods.py) - script that used to run RF and Adaboost\
-[mlp_torch.py](./mlp_torch.py) - script that used to run MLP on all data frames\
+[ensemble_methods.py](./ensemble_methods.py) - script that used to run RF and Adaboost in comprehensive mode and imbalanced dataset mode\
+[mlp_torch.py](./mlp_torch.py) - script that used to run MLP on comprehensive mode\
 [mlp_torch_sampling.py](./mlp_torch_sampling.py) - script that used to run MLP to address imbalanced dataset problem\
-[svm_dt.py](./svm_dt.py) - script that used to run SVM and decision tree classifiers\
+[svm_dt.py](./svm_dt.py) - script that used to run SVM and decision tree classifiers in comprehensive mode and imbalanced dataset mode\
+[knn.py](./knn.py) - script that used to run kNN classifier in comprehensive mode and imbalanced dataset mode\
 [res](./res) - the directory where the computed results will be saved
 
 ***
 
-## Example usage
-Evaluate random forest's performance on dataset of all 3 types:
+## Usage
+
+<ul>
+    <li>for <a href="./ensemble_methods.py">ensemble_methods.py</a>,
+<a href="./mlp_torch.py">mlp_torch.py</a> and <a href="./mlp_torch_sampling.py">mlp_torch_sampling.py</a>,
+input arguments need to be supplied to choose mode and hyperparam settings.
+    </li>
+    <li>for <a href="./knn.py">knn.py</a> and  <a href="./svm_dt.py">svm_dt.py</a>,
+    the hyperparameters need to be changed inside the script.
+    </li>
+</ul>
+
+For those that require commandline arguments:\
+e.g. Evaluate random forest's performance on dataset of all 3 types:
 ```shell
 python3 ./ensemble_mathods.py --task full --classifier random_forest --res_dir ./res/
 ```
@@ -36,6 +49,8 @@ For argument help please refer to:
 ```shell
 python3 ./ensemble_mathods.py -h
 ```
+
+***
 
 ## Note
 Conda virtual environment is recommended for MLP models due to dependencies of PyTorch. \
@@ -47,5 +62,6 @@ create the PyTorch environment of the project.
 - Run the MLP files inside the `torch` environment. 
 
 Non-MLP models can be run normally without Conda.
+
 ***
 <p align="center">Made with ❤ by <em>Team F</em></p>
