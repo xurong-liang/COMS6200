@@ -7,6 +7,7 @@ from dataloader import get_data_frame, get_train_test_indices_for_all_folds
 from evaluate import compute_metric_values, generate_class_performance_text, save_result_text
 import numpy as np
 import copy
+from collections import Counter
 from multiprocessing import Process
 from datetime import timedelta
 from argparse import ArgumentParser
@@ -14,7 +15,7 @@ import sys
 import imblearn
 import os
 import re
-
+'''
 def check_has_undersampling(classifier_name: str, imbalanced_class: str,
                             dataset: str,
                             res_dir: str = "./res/address_imbalanced_res") -> bool:
@@ -35,7 +36,7 @@ def check_has_undersampling(classifier_name: str, imbalanced_class: str,
             if _file.endswith(f"{dataset}.txt") and re.match(expr, _file):
                 return True
     return False
-
+'''
 
 def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class: str,
                             sampling_strategy: float = .2):
@@ -48,14 +49,9 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
     :param sampling_strategy: the percentage of minor class instances wrt to number
         of instances in the majority class
     """
-    class_imbalanced_methods = ["SMOTE", "SMOTETomek", "SMOTEENN", ]
+    over_samplings = ["SMOTE", "SMOTETomek", "SMOTEENN", ] 
     under_samplings = ["AllKNN", "CondensedNearestNeighbour", "TomekLinks"]
-    # check whether we need to run under-sampling strategies again
-    has_undersampling = check_has_undersampling(classifier_name=base_classifier,
-                                                imbalanced_class=imbalanced_class,
-                                                dataset=dataset)
-    if not has_undersampling:
-        class_imbalanced_methods.extend(under_samplings)
+    class_imbalanced_methods = over_samplings + under_samplings
 
     class_imbalanced_methods_mapping = {
         # over-sampling strategies
@@ -132,7 +128,7 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
 
             class_metrics[method]["new_train_label_distributions"].append(dict(Counter(y)))
             imbalanced_end = timer()
-            model = RandomForestClassifier(random_state=seed)
+            model = KNeighborsClassifier()
 
             # train model
             elapsed_time, model = train_a_batch(features=X,
@@ -167,15 +163,15 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
     if set(class_imbalanced_methods) != set(under_samplings):
         # not purely under-samplings, add sampling strategy as hyper setting
         hyper_text += f"_sampling_strategy_{sampling_strategy}"
+    print(performance_text, imbalanced_class)
     save_result_text(classifier=base_classifier + f"_{imbalanced_class}",
                      hyper=hyper_text, data_method=dataset,
                      class_performance_text=performance_text,
-                     imbalanced_problem=True)
+                     res_dir= imbalanced_res_path)
     folder_name = base_classifier + f"_{imbalanced_class}_" + hyper_text + "_" + dataset
     # compute pca
     plot_2_pc_results(dataset_x=all_datasets_x, dataset_y=all_datasets_y,
-                      res_dir=f"./res/address_imbalanced_res/{folder_name}")
-
+                      res_dir=plot_path)
 
 # def get_arguments() -> dict:
 #     """
@@ -227,11 +223,12 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
 #             exit(1)
 #     return args
 
-def init_class_metrics(text_mapping: dict) -> dict:
+def init_class_metrics(text_mapping: dict, imbalanced_problem: bool = False) -> dict:
     """
     Initialize the metrics dict that records all performance results
 
     :param text_mapping: {text_label: (position of 1 in the one-hot vector, corresponding one-hot vector)}
+    :param imbalanced_problem: if the class metrics is set for imbalanced problem
     :return: the result dict in form {"class_name": {"metric_name": []}}
     """
     metrics = {
@@ -241,63 +238,15 @@ def init_class_metrics(text_mapping: dict) -> dict:
         "f1": [],
         'training time': []
     }
+    # records the number of class labels for each batch, after imbalanced method applied
+    if imbalanced_problem:
+        metrics["new_train_label_distributions"] = []
 
     class_metrics = {}
     for class_name in text_mapping.keys():
         class_metrics[class_name] = copy.deepcopy(metrics)
     return class_metrics
 
-
-def evaluate_a_data_frame(info: dict):
-    """
-    Process target function
-
-    :param info: The dictionary that contains all information to evaluate a data frame
-    """
-    all_folder_indices = info["train_test_indices"]
-
-    data_frame = info["data_frame"]
-    data_method = info["data_method"]
-    one_hot_labels = info["one_hot_labels"]
-    one_pos_text_mapping = info['one_pos_text_mapping']
-    classifier_type = info["classifier_type"]
-    seed = info["seed"]
-    text_mapping = info["text_mapping"]
-    class_metrics = init_class_metrics(text_mapping)
-
-    for train_idxes, test_idxes in all_folder_indices:
-        train_features, train_labels = data_frame.iloc[train_idxes], one_hot_labels[train_idxes, :]
-        test_features, ground_truth = data_frame.iloc[test_idxes], one_hot_labels[test_idxes, :]
-
-        # one classifier per class
-        for one_pos, item in one_pos_text_mapping.items():
-            class_name = item[0]
-            batch_train_labels = train_labels[:, one_pos]
-            batch_ground_truth = ground_truth[:, one_pos]
-
-            assert not np.all(batch_ground_truth == 0) and not np.all(batch_train_labels == 0)
-            if class_name == "Normal":
-                # compute all combined scores
-                # normal class gets label 0, other classes all 1's
-                batch_train_labels = np.bitwise_not(batch_train_labels.astype(bool)).astype(float)
-                batch_ground_truth = np.bitwise_not(batch_ground_truth.astype(bool)).astype(float)
-            class_metrics = batch_runner(train_features, batch_train_labels,
-                                         test_features, batch_ground_truth, class_metrics,
-                                         classifier_type, seed, class_name=class_name)
-
-    for text_label in text_mapping.keys():
-        metrics = class_metrics[text_label]
-        for key, value in metrics.items():
-            metrics[key] = np.array(value)
-            if key == "training time":
-                metrics[key] = metrics[key].sum()
-            else:
-                metrics[key] = metrics[key].mean()
-
-    performance_text = generate_class_performance_text(res_dict=class_metrics)
-    save_result_text(classifier=classifier_type, hyper="default", data_method=data_method,
-                     class_performance_text=performance_text)
-    print(f'{classifier_type} results for {data_method} dataset completed.')
 
 
 def batch_runner(train_features, batch_train_labels, test_features,
@@ -366,9 +315,14 @@ def test_a_batch(features, ground_truth, model):
 
 
 if __name__ == "__main__":
-    # True if run full program;¨False otherwise (i.e., imbalanced dataset problem)
-    run_full_program = False
+    argparse = ArgumentParser()
+    argparse.add_argument("--run_full_program", type=lambda x: x.lower() == "true", required=True,
+    help="if true, then runs the whole program; otherwise, tries to address the imbalanced problem of U2R class")
 
+
+    # True if run full program;¨False otherwise (i.e., imbalanced dataset problem)
+    run_full_program = argparse.parse_args().run_full_program
+    seed= 2022
     total_start = timer()
     #processes = []
     if run_full_program: 
@@ -390,7 +344,10 @@ if __name__ == "__main__":
                 }
                 evaluate_a_data_frame(inputs)
     else:
-        pass
+        for _s in [round(.1 * _, 1) for _ in range(1, 6)]:
+                print(f"current sampling strategy: {_s}")
+                solve_imbalance_problem(dataset= 'minmax', base_classifier='knn', imbalanced_class= 'U2R',
+                            sampling_strategy=_s)
            #p = Process(target=evaluate_a_data_frame, args=(inputs,))
             #print(f"Now start {c_type} on {method} dataset")
             #p.start()
