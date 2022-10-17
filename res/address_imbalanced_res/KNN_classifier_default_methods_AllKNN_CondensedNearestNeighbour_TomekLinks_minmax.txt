@@ -1,0 +1,31 @@
+imbalanced class U2R 
+hypertext classifier_default_methods_SMOTE_SMOTETomek_SMOTEENN_AllKNN_CondensedNearestNeighbour_TomekLinks
+dataset: minmax 
+original train distribution: [{0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 12}]
+
+method: AllKNN, [
+accuracy: 0.99996511,
+precision: 0.88888889,
+recall: 0.35555556,
+f1: 0.50529101,
+training time: 1885.40156050s,
+new train distribution: [{0.0: 229248, 1.0: 11} {0.0: 229247, 1.0: 11} {0.0: 229247, 1.0: 12}]
+]
+
+method: CondensedNearestNeighbour, [
+accuracy: 0.93707559,
+precision: 0.00157912,
+recall: 0.72222222,
+f1: 0.00314278,
+training time: 561.25612550s,
+new train distribution: [{0.0: 28, 1.0: 11} {0.0: 28, 1.0: 11} {0.0: 27, 1.0: 12}]
+]
+
+method: TomekLinks, [
+accuracy: 0.99996511,
+precision: 0.88888889,
+recall: 0.35555556,
+f1: 0.50529101,
+training time: 608.71751290s,
+new train distribution: [{0.0: 229248, 1.0: 11} {0.0: 229248, 1.0: 11} {0.0: 229248, 1.0: 12}]
+]
