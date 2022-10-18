@@ -32,8 +32,8 @@ The preprocessed dataset may be found in [here](https://drive.google.com/drive/f
 - Language: Python 3.9
 - Require packages for non-MLP models: `pandas, scikit-learn, numpy, imblearn, platform`
 - Require packages for MLP models: see [Note](#note) below
-- For [ensemble_methods.py](./ensemble_methods.py), [mlp_torch.py](./mlp_torch.py) and [mlp_torch_sampling.py](./mlp_torch_sampling.py), input arguments need to be supplied to choose mode and hyperparameters settings.
-- For [knn.py](./knn.py) and [svm_dt.py](./svm_dt.py), the hyperparameters need to be changed inside the script.
+- For [ensemble_methods.py](./ensemble_methods.py), [knn.py](./knn.py), [mlp_torch.py](./mlp_torch.py) and [mlp_torch_sampling.py](./mlp_torch_sampling.py), input arguments need to be supplied to choose mode and hyperparameters settings.
+- For [svm_dt.py](./svm_dt.py), the hyperparameters need to be changed inside the script.
 
 <!-- <ul>
     <li>For <a href="./ensemble_methods.py">ensemble_methods.py</a>,
