@@ -1,0 +1,34 @@
+imbalanced class U2R 
+Hyper: classifier_default_methods_SMOTE_SMOTETomek_SMOTEENN_sampling_strategy_0.1
+dataset: minmax 
+original train distribution: [{0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 11}, {0.0: 229248, 1.0: 12}]
+
+method: SMOTE, [
+accuracy: 0.99998255,
+precision: 0.93333333,
+recall: 0.71111111,
+f1: 0.80538721,
+training time: 4.88063930s,
+new train distribution: [{0.0: 229248, 1.0: 22924} {0.0: 229248, 1.0: 22924}
+ {0.0: 229248, 1.0: 22924}]
+]
+
+method: SMOTETomek, [
+accuracy: 0.99998255,
+precision: 0.93333333,
+recall: 0.71111111,
+f1: 0.80538721,
+training time: 842.68708900s,
+new train distribution: [{0.0: 229248, 1.0: 22924} {0.0: 229248, 1.0: 22924}
+ {0.0: 229248, 1.0: 22924}]
+]
+
+method: SMOTEENN, [
+accuracy: 0.99998255,
+precision: 0.93333333,
+recall: 0.71111111,
+f1: 0.80538721,
+training time: 786.70967400s,
+new train distribution: [{0.0: 229247, 1.0: 22924} {0.0: 229247, 1.0: 22924}
+ {0.0: 229246, 1.0: 22924}]
+]
