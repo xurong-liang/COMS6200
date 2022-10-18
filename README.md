@@ -29,16 +29,21 @@ The preprocessed dataset may be found in [here](https://drive.google.com/drive/f
 ***
 
 ## Usage
+- Language: Python 3.9
+- Require packages for non-MLP models: `pandas, scikit-learn, numpy, imblearn, platform`
+- Require packages for MLP models: see [Note](#note) below
+- For [ensemble_methods.py](./ensemble_methods.py), [mlp_torch.py](./mlp_torch.py) and [mlp_torch_sampling.py](./mlp_torch_sampling.py), input arguments need to be supplied to choose mode and hyperparameters settings.
+- For [knn.py](./knn.py) and [svm_dt.py](./svm_dt.py), the hyperparameters need to be changed inside the script.
 
-<ul>
-    <li>for <a href="./ensemble_methods.py">ensemble_methods.py</a>,
+<!-- <ul>
+    <li>For <a href="./ensemble_methods.py">ensemble_methods.py</a>,
 <a href="./mlp_torch.py">mlp_torch.py</a> and <a href="./mlp_torch_sampling.py">mlp_torch_sampling.py</a>,
 input arguments need to be supplied to choose mode and hyperparam settings.
     </li>
-    <li>for <a href="./knn.py">knn.py</a> and  <a href="./svm_dt.py">svm_dt.py</a>,
+    <li>For <a href="./knn.py">knn.py</a> and  <a href="./svm_dt.py">svm_dt.py</a>,
     the hyperparameters need to be changed inside the script.
     </li>
-</ul>
+</ul> -->
 
 For those that require commandline arguments:\
 e.g. Evaluate random forest's performance on dataset of all 3 types:
