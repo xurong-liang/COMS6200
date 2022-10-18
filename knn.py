@@ -51,7 +51,7 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
     """
     over_samplings = ["SMOTE", "SMOTETomek", "SMOTEENN", ] 
     under_samplings = ["AllKNN", "CondensedNearestNeighbour", "TomekLinks"]
-    class_imbalanced_methods = over_samplings + under_samplings
+    class_imbalanced_methods = over_samplings 
 
     class_imbalanced_methods_mapping = {
         # over-sampling strategies
@@ -164,6 +164,10 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
         # not purely under-samplings, add sampling strategy as hyper setting
         hyper_text += f"_sampling_strategy_{sampling_strategy}"
     print(performance_text, imbalanced_class)
+    f = open("knn_imbalanced.txt", "a")
+    f.write('sampling strategy: '+ sampling_strategy+ 'i_class: '+imbalanced_class+ "performance: "+ performance_text)
+    f.close()
+    '''
     save_result_text(classifier=base_classifier + f"_{imbalanced_class}",
                      hyper=hyper_text, data_method=dataset,
                      class_performance_text=performance_text,
@@ -172,6 +176,7 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
     # compute pca
     plot_2_pc_results(dataset_x=all_datasets_x, dataset_y=all_datasets_y,
                       res_dir=plot_path)
+    '''
 
 # def get_arguments() -> dict:
 #     """
@@ -344,7 +349,7 @@ if __name__ == "__main__":
                 }
                 evaluate_a_data_frame(inputs)
     else:
-        for _s in [round(.1 * _, 1) for _ in range(1, 6)]:
+        for _s in [round(.1 * _, 1) for _ in range(5, 6)]:
                 print(f"current sampling strategy: {_s}")
                 solve_imbalance_problem(dataset= 'minmax', base_classifier='knn', imbalanced_class= 'U2R',
                             sampling_strategy=_s)

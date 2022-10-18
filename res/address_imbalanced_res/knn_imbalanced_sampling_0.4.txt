@@ -1,0 +1,30 @@
+current sampling strategy: 0.4
+
+method: SMOTE, [
+accuracy: 0.99998255,
+precision: 0.93333333,
+recall: 0.71111111,
+f1: 0.80538721,
+training time: 8.71779400s,
+new train distribution: [{0.0: 229248, 1.0: 91699} {0.0: 229248, 1.0: 91699}
+ {0.0: 229248, 1.0: 91699}]
+]
+method: SMOTETomek, [
+accuracy: 0.99998255,
+precision: 0.93333333,
+recall: 0.71111111,
+f1: 0.80538721,
+training time: 1198.43052600s,
+new train distribution: [{0.0: 229248, 1.0: 91699} {0.0: 229248, 1.0: 91699}
+ {0.0: 229248, 1.0: 91699}]
+]
+method: SMOTEENN, [
+accuracy: 0.99998255,
+precision: 0.93333333,
+recall: 0.71111111,
+f1: 0.80538721,
+training time: 1216.58093850s,
+new train distribution: [{0.0: 229247, 1.0: 91699} {0.0: 229247, 1.0: 91699}
+ {0.0: 229246, 1.0: 91699}]
+]
+ U2R

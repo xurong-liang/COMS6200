@@ -1,0 +1,53 @@
+sampling_strategy:0.1
+
+method: SMOTE, [
+accuracy: 0.99998255,
+precision: 0.93333333,
+recall: 0.71111111,
+f1: 0.80538721,
+training time: 4.88063930s,
+new train distribution: [{0.0: 229248, 1.0: 22924} {0.0: 229248, 1.0: 22924}
+ {0.0: 229248, 1.0: 22924}]
+]
+method: SMOTETomek, [
+accuracy: 0.99998255,
+precision: 0.93333333,
+recall: 0.71111111,
+f1: 0.80538721,
+training time: 842.68708900s,
+new train distribution: [{0.0: 229248, 1.0: 22924} {0.0: 229248, 1.0: 22924}
+ {0.0: 229248, 1.0: 22924}]
+]
+method: SMOTEENN, [
+accuracy: 0.99998255,
+precision: 0.93333333,
+recall: 0.71111111,
+f1: 0.80538721,
+training time: 786.70967400s,
+new train distribution: [{0.0: 229247, 1.0: 22924} {0.0: 229247, 1.0: 22924}
+ {0.0: 229246, 1.0: 22924}]
+]
+method: AllKNN, [
+accuracy: 0.99996511,
+precision: 0.88888889,
+recall: 0.35555556,
+f1: 0.50529101,
+training time: 1885.40156050s,
+new train distribution: [{0.0: 229248, 1.0: 11} {0.0: 229247, 1.0: 11} {0.0: 229247, 1.0: 12}]
+]
+method: CondensedNearestNeighbour, [
+accuracy: 0.93707559,
+precision: 0.00157912,
+recall: 0.72222222,
+f1: 0.00314278,
+training time: 561.25612550s,
+new train distribution: [{0.0: 28, 1.0: 11} {0.0: 28, 1.0: 11} {0.0: 27, 1.0: 12}]
+]
+method: TomekLinks, [
+accuracy: 0.99996511,
+precision: 0.88888889,
+recall: 0.35555556,
+f1: 0.50529101,
+training time: 608.71751290s,
+new train distribution: [{0.0: 229248, 1.0: 11} {0.0: 229248, 1.0: 11} {0.0: 229248, 1.0: 12}]
+]
