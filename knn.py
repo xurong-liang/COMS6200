@@ -146,7 +146,7 @@ def solve_imbalance_problem(dataset: str, base_classifier: str, imbalanced_class
     save_result_text(classifier=base_classifier + f"_{imbalanced_class}",
                      hyper=hyper_text, data_method=dataset,
                      class_performance_text=performance_text,
-                     res_dir="./res/dir/address_imbalanced_res/")
+                     res_dir="./res/address_imbalanced_res/")
     # folder_name = base_classifier + f"_{imbalanced_class}_" + hyper_text + "_" + dataset
     # compute pca
     # plot_2_pc_results(dataset_x=all_datasets_x, dataset_y=all_datasets_y,
