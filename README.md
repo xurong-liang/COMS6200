@@ -1,6 +1,6 @@
-# COMS6200 Project
+# COMS6200 Project - The University of Queensland
 
-This repo is for Sem 2, 2022 group project - Machine Learning based Network Intrusion Detection.
+This repo is created for Sem 2, 2022 COMS6200 group project - Machine Learning based Network Intrusion Detection.
 
 ***
 
@@ -14,7 +14,7 @@ This repo is for Sem 2, 2022 group project - Machine Learning based Network Intr
 
 ***
 
-## Info about each script/directory:
+## Info about each script / directory:
 [proprocess_and_data_visualization.ipynb](./proprocess_and_data_visualization.ipynb) - notebook for raw dataset preprocess & visualization\
 The preprocessed dataset may be found in [here](https://drive.google.com/drive/folders/1cnvofUhz84pMR0SztvfOYzIcpq1sR2VT?usp=sharing)\
 [dataloader.py](./dataloader.py) - script that loads the preprocessed dataframe\
